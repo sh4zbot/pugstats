@@ -168,7 +168,10 @@ if(compareTwo) {
 }
 
 playerArr.forEach( function(player){
-	player.captainPerMatch = player.captained / player.matches;
+	var cpm = (player.captained / player.matches) * 100;
+	cpm = cpm.toString().substring(0,4);
+	player.captainPerMatch = cpm + "%";
+
 })
 
 
