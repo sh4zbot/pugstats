@@ -32,8 +32,14 @@ Object.keys(players).forEach(function(key) {
 playerArr.sort(compareName);
 
 // init player objects for comparison (only used if id1 and id2 is set)
-var player1 = {cWins: 0};
-var player2 = {cWins: 0};
+var player1 = {	cWins:  0,
+								wins:   0,
+								losses: 0,
+							};
+var player2 = {	cWins: 	0,
+								wins: 	0,
+								losses: 0,
+							};
 
 playerArr.find((stored,i) => {
 	if(stored.id == id1) {
@@ -49,18 +55,14 @@ var cData = {	matches: 				0,
 							bothWin: 				0,
 							bothLose: 			0,
 							bothCaptain: 		0,
+							ties: 					0,
 						};
 
 
 // Loop through every match/player and gather data
 data.forEach(function(match){
  	
-	var matchPlayerArr = []; // TODO: save data for each player in match if id1 & id2...
-	// if(match.players.find((player,i) => {
-	// 	if (player.user.id == id1) {
-	// 		console.log("truue");
-	// 	}	
-	// }))
+	var matchPlayerArr = [];
 
 	match.players.forEach(function(player){
 		
@@ -104,6 +106,7 @@ data.forEach(function(match){
 		if(found1 && found2) {
 			console.log("found both")
 			cData.matches = cData.matches + 1;
+			//both captained
 			if(fp1.captain && fp2.captain) {
 				cData.bothCaptain = cData.bothCaptain + 1;
 				if (fp1.team == match.winningTeam) {
@@ -113,11 +116,25 @@ data.forEach(function(match){
 					player2.cWins = player2.cWins + 1;
 				}
 			}
+			//both win
 			if(match.winningTeam == fp1.team && match.winningTeam == fp2.team) {
 				cData.bothWin = cData.bothWin + 1;
 			}
+			//both lose
 			if(match.winningTeam != fp1.team && match.winningTeam != fp2.team && match.winningTeam != 0) {
 				cData.bothLose = cData.bothLose + 1;
+			}
+			//wins & losses
+			if(match.winningTeam == fp1.team) {
+				player1.wins = player1.wins + 1;
+				player2.losses = player2.losses + 1;
+			}
+			if(match.winningTeam == fp2.team) {
+				player2.wins = player2.wins + 1;
+				player1.losses = player1.losses + 1;
+			}
+			if(match.winningTeam == 0) {
+				cData.ties = cData.ties +1;
 			}
 		}
 
@@ -125,9 +142,6 @@ data.forEach(function(match){
 	// console.log(matchPlayerArr);
 })
 
-// console.log(cData);
-// console.log(player1);
-// console.log(player2);
 if(compareTwo) {
 	document.getElementById("matches").innerHTML = cData.matches;
 	document.getElementById("bothWin").innerHTML = cData.bothWin;
@@ -139,6 +153,15 @@ if(compareTwo) {
 
 	document.getElementById("p1cWins").innerHTML = "Captain vs Captain wins: " + player1.cWins;
 	document.getElementById("p2cWins").innerHTML = "Captain vs Captain wins: " + player2.cWins;
+
+	document.getElementById("p1Wins").innerHTML = "Wins: " + player1.wins;
+	document.getElementById("p1Losses").innerHTML = "Losses: " + player1.losses;
+
+	document.getElementById("p2Wins").innerHTML = "Wins: " + player2.wins;
+	document.getElementById("p2Losses").innerHTML = "Losses: " + player2.losses;
+
+	document.getElementById("ties").innerHTML = cData.ties;
+
 }
 
 playerArr.forEach( function(player){
