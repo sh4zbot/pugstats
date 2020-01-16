@@ -128,11 +128,11 @@ data.forEach(function(match){
 				cData.bothLose = cData.bothLose + 1;
 			}
 			//wins & losses
-			if(match.winningTeam == fp1.team) {
+			if(fp1.team != fp2.team && match.winningTeam == fp1.team) {
 				player1.wins = player1.wins + 1;
 				player2.losses = player2.losses + 1;
 			}
-			if(match.winningTeam == fp2.team) {
+			if(fp1.team != fp2.team && match.winningTeam == fp2.team) {
 				player2.wins = player2.wins + 1;
 				player1.losses = player1.losses + 1;
 			}
