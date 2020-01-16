@@ -61,7 +61,10 @@ var cData = {	matches: 				0,
 
 // Loop through every match/player and gather data
 data.forEach(function(match){
- 	
+	// Only looking at stats for PUG queue
+ 	if (match.queue.id != 1548704432021) {
+ 		return;
+ 	}
 	var matchPlayerArr = [];
 
 	match.players.forEach(function(player){
@@ -154,18 +157,18 @@ if(compareTwo) {
 	document.getElementById("p1cWins").innerHTML = "Captain vs Captain wins: " + player1.cWins;
 	document.getElementById("p2cWins").innerHTML = "Captain vs Captain wins: " + player2.cWins;
 
-	document.getElementById("p1Wins").innerHTML = "Wins: " + player1.wins;
-	document.getElementById("p1Losses").innerHTML = "Losses: " + player1.losses;
+	document.getElementById("p1Wins").innerHTML = "Wins vs " + player2.name  + ": " + player1.wins;
+	document.getElementById("p1Losses").innerHTML = "Losses vs " + player2.name  + ": " + player1.losses;
 
-	document.getElementById("p2Wins").innerHTML = "Wins: " + player2.wins;
-	document.getElementById("p2Losses").innerHTML = "Losses: " + player2.losses;
+	document.getElementById("p2Wins").innerHTML = "Wins vs " + player1.name  + ": " + player2.wins;
+	document.getElementById("p2Losses").innerHTML = "Losses vs " + player1.name  + ": " + player2.losses;
 
 	document.getElementById("ties").innerHTML = cData.ties;
 
 }
 
 playerArr.forEach( function(player){
-	player.captWinP = player.captained / player.matches;
+	player.captainPerMatch = player.captained / player.matches;
 })
 
 
@@ -218,8 +221,8 @@ function compareName( a, b ) {
   return 0;
 }
 
-function compareCaptWinP(a, b) {
-  return a.captWinP - b.captWinP;
+function comparecaptainPerMatch(a, b) {
+  return a.captainPerMatch - b.captainPerMatch;
 }
 
 })
