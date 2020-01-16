@@ -9,33 +9,53 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
- <!-- <div id="playerStats">
- 	<div>
- 		<span>Name: </span>
- 		<span id="name"></span>
- 	</div>
- 	<div>
- 		<span>Number of games: </span>
- 		<span id="games"></span>
- 	</div>
- 	<div>
- 		<span>Times captained: </span>
- 		<span id="timescaptain"></span>
- 	</div>
- 	<div>
- 		<span>Captain percentage: </span>
- 		<span id="percentcaptain"></span>
- 	</div>
- </div> -->
- <div class="tableFixHead" id="players">
- 		<table class="table" id="playersTable">
- 			<thead>
- 				<tr>
- 					
- 				</tr>
- 			</thead>
- 			<tbody>
- 			</tbody>
- 		</table>
- </div>
+	<div class="container">
+		<div class="row">
+			<div class="col text-center">
+				<h1 id="p1Name"> n/a </h1>
+				<span id="p1cWins">
+					Captain wins: 
+				</span>
+			</div>
+			<div class="col text-center">
+				
+				<table>
+					<tbody>
+						<tr>
+							<td>matches</td>
+							<td id="matches"></td>
+						</tr>
+						<tr>
+							<td>wins together</td>
+							<td id="bothWin"></td>
+						</tr>
+						<tr>
+							<td>losses toetherr</td>
+							<td id="bothLose"></td>
+						</tr>
+						<tr>
+							<td>captained eachother</td>
+							<td id="bothCaptain"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col text-center">
+				<h1 id="p2Name"> n/a </h1>
+				<span id="p2cWins">
+					Captain wins: 
+				</span>
+			</div>
+		</div>
+		<div class="tableFixHead" id="players">
+			 		<table class="table" id="playersTable">
+			 			<thead>
+			 				<tr>
+			 				</tr>
+			 			</thead>
+			 			<tbody>
+			 			</tbody>
+			 		</table>
+		 		</div>
+	</div>
 </body>

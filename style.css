@@ -1,4 +1,4 @@
-.tableFixHead          { overflow-y: auto; height: 100%; }
+.tableFixHead          { overflow-y: auto; height: 80%; }
 .tableFixHead thead th { position: sticky; top: 0; }
 
 /* Just common table stuff. Really. */

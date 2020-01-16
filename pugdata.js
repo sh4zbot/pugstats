@@ -9,8 +9,6 @@ console.log(id2)
 
 console.log(compareTwo);
 
-// function 
-
 var players = {};
 // Put all id's and usernames into players
 data.forEach(function(match){
@@ -33,26 +31,115 @@ Object.keys(players).forEach(function(key) {
 });
 playerArr.sort(compareName);
 
+// init player objects for comparison (only used if id1 and id2 is set)
+var player1 = {cWins: 0};
+var player2 = {cWins: 0};
+
+playerArr.find((stored,i) => {
+	if(stored.id == id1) {
+		player1.name = stored.name;
+	}
+	if(stored.id == id2) {
+		player2.name = stored.name;
+	}
+});
+
+// combined data for both compared players
+var cData = {	matches: 				0,
+							bothWin: 				0,
+							bothLose: 			0,
+							bothCaptain: 		0,
+						};
+
+
 // Loop through every match/player and gather data
 data.forEach(function(match){
-	match.players.forEach(function(player){
-		let obj = playerArr.find((stored,i) => {
-			
-			// if ()
+ 	
+	var matchPlayerArr = []; // TODO: save data for each player in match if id1 & id2...
+	// if(match.players.find((player,i) => {
+	// 	if (player.user.id == id1) {
+	// 		console.log("truue");
+	// 	}	
+	// }))
 
+	match.players.forEach(function(player){
+		
+		if(compareTwo) { // if we are comparing two players
+			matchPlayerArr.push({	id: player.user.id,
+													 	name: player.user.name,
+													 	team: player.team,
+													 	captain: player.captain,
+													 });
+		}
+		
+
+		playerArr.find((stored,i) => {
 			if(stored.id == player.user.id) {
 					playerArr[i] = {  id: 				stored.id, 
 														name: 			stored.name, 
 														matches: 		stored.matches + 1, 
 														captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
 														win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
-														loss: (match.winningTeam == player.team) ? stored.loss : stored.loss + 1,
+														loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
 													}
-			return true; // = .find finishes						
+			return true; // return true == .find() is done			
 			}
 		})
+
 	})
+
+	if(compareTwo) {
+
+		var found1 = false, found2 = false;
+		matchPlayerArr.forEach((player) => {
+			if (parseInt(player.id) === parseInt(id1)) {
+				found1 = true;
+				fp1 = player;
+			}
+			if (parseInt(player.id) === parseInt(id2)) {
+				found2 = true;
+				fp2 = player;
+			}
+		});
+		if(found1 && found2) {
+			console.log("found both")
+			cData.matches = cData.matches + 1;
+			if(fp1.captain && fp2.captain) {
+				cData.bothCaptain = cData.bothCaptain + 1;
+				if (fp1.team == match.winningTeam) {
+					player1.cWins = player1.cWins + 1;
+				}
+				if (fp2.team == match.winningTeam) {
+					player2.cWins = player2.cWins + 1;
+				}
+			}
+			if(match.winningTeam == fp1.team && match.winningTeam == fp2.team) {
+				cData.bothWin = cData.bothWin + 1;
+			}
+			if(match.winningTeam != fp1.team && match.winningTeam != fp2.team && match.winningTeam != 0) {
+				cData.bothLose = cData.bothLose + 1;
+			}
+		}
+
+	}
+	// console.log(matchPlayerArr);
 })
+
+// console.log(cData);
+// console.log(player1);
+// console.log(player2);
+if(compareTwo) {
+	document.getElementById("matches").innerHTML = cData.matches;
+	document.getElementById("bothWin").innerHTML = cData.bothWin;
+	document.getElementById("bothLose").innerHTML = cData.bothLose;
+	document.getElementById("bothCaptain").innerHTML = cData.bothCaptain;
+
+	document.getElementById("p1Name").innerHTML = player1.name;
+	document.getElementById("p2Name").innerHTML = player2.name;
+
+	document.getElementById("p1cWins").innerHTML = "Captain vs Captain wins: " + player1.cWins;
+	document.getElementById("p2cWins").innerHTML = "Captain vs Captain wins: " + player2.cWins;
+}
 
 playerArr.forEach( function(player){
 	player.captWinP = player.captained / player.matches;
@@ -82,7 +169,6 @@ playerArr.forEach( function( player) {
 		tr.className += "opponent";
 	}
 	Object.keys(player).forEach(function(key) {
-
 		if(key == "id") {
 			return;
 		}
@@ -97,8 +183,6 @@ playerArr.forEach( function( player) {
 	})
 	tbody.appendChild(tr);
 });
-// tbl.appendChild(tbdy)
-// playersDiv.appendChild(tbl)
 
 // Utils
 function compareName( a, b ) {
@@ -125,7 +209,7 @@ function getIdLink(id,name) {
 	var linkText = document.createTextNode(name);
 	a.appendChild(linkText);
 
-	// "Routing"
+	// shitty "routing" state machine
 	if ( url.searchParams.get("id2")) {
 		if( url.searchParams.get("id1") === id || 
 				url.searchParams.get("id2") === id ) { 
@@ -145,6 +229,5 @@ function getIdLink(id,name) {
 	else {
 		a.href = noParams + "?id1=" + id;
 	}
-	// a.title = "my title text";
 	return a;
 }
