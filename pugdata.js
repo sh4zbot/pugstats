@@ -1,4 +1,4 @@
-var state = {};
+var state = {}; 
 
 document.addEventListener('DOMContentLoaded', (event) => {
 var url_string = window.location.href
@@ -7,9 +7,7 @@ state.id1 = url.searchParams.get("id1");
 state.id2 = url.searchParams.get("id2");
 var compareTwo = state.id1 ? state.id2 ? true : false : false;
 
-// For each player init a player object and push it
-// to playerArr
-init(state);
+init(state);//big TODO: make all functions return state, never touch global state
 
 function init(state) {
 	state.playerArr = [];
@@ -68,13 +66,17 @@ function init(state) {
 
 // todo: remove all params
 getCompareStats(state);
+console.log(state);
+getCpm();
 
-state.playerArr.forEach( function(player){
-	var cpm = (player.captained / player.matches) * 100;
-	cpm = cpm.toString().substring(0,4);
-	player.captainPerMatch = cpm + "%";
+function getCpm() 
+{	state.playerArr.forEach( function(player){
+		var cpm = (player.captained / player.matches) * 100;
+		cpm = cpm.toString().substring(0,4);
+		player.captainPerMatch = cpm + "%";
+	})
+}
 
-})
 
 if (state.id1 && state.id2) {
 	
@@ -180,8 +182,6 @@ if(state.id2) {
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 }
 
-
-
 function onPlayerClick(id){
 	if (state.id1 == null){
 		if(state.id2 == id){
@@ -199,8 +199,9 @@ function onPlayerClick(id){
 		state.id2 = id;
 	} else if (state.id1 && state.id2){
 		state.id2 = id;}
-	init(state)
+	init(state) // TODO: remove this
 	getCompareStats(state);
+	getCpm(); //TODO this shouldnt be needed
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
 	displayIndexTable();
