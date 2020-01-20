@@ -9,3 +9,5 @@ th     { background:#eee; }
 .opponent { background-color: #fc9f7d; }
 
 #compareDiv {display: none;}
+
+thead {cursor: pointer;}
