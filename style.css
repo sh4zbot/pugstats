@@ -1,10 +1,11 @@
 .tableFixHead          { overflow-y: auto; height: 80%; }
 .tableFixHead thead th { position: sticky; top: 0; }
-
-/* Just common table stuff. Really. */
-table  { border-collapse: collapse; width: 100%; }
-th, td { padding: 8px 16px; }
 th     { background:#eee; }
+
+.ctable table  { border-collapse: collapse; width: 100%; }
+.ctable th, td { padding: 3px 14px; }
+
+
 .active { background-color: #b3feb1; }
 .opponent { background-color: #fc9f7d; }
 
@@ -12,3 +13,11 @@ th     { background:#eee; }
 
 thead {cursor: pointer;}
 tbody tr {cursor: pointer;}
+
+/*.rightleft tr td:first-child {
+	text-align:right;
+}
+
+.rightleft tr td:nth-child(2) {
+	text-align:left;
+}*/

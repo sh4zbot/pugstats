@@ -184,7 +184,12 @@ if(state.id2) {
 
 function onPlayerClick(id){
 	if (state.id1 == null){
-		state.id1=id;
+		if(state.id2 == id){
+			state.id1=null;
+			state.id2=null;
+		} else {
+			state.id1=id;
+		}
 	}	else if (state.id1 == id){
 		state.id1 = null;
 		// state.id2 = null;
