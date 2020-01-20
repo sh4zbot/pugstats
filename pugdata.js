@@ -5,17 +5,7 @@ var url_string = window.location.href
 var url = new URL(url_string);
 state.id1 = url.searchParams.get("id1");
 state.id2 = url.searchParams.get("id2");
-// var id1 = url.searchParams.get("id1");
-// var id2 = url.searchParams.get("id2");
 var compareTwo = state.id1 ? state.id2 ? true : false : false;
-console.log(state.id1)
-console.log(state.id2)
-console.log(compareTwo);
-
-// var players = {};
-// Put all id's and usernames into players
-
-
 
 // For each player init a player object and push it
 // to playerArr
@@ -77,16 +67,31 @@ function init(state) {
 }
 
 // todo: remove all params
-state.cData = getCompareStats(state.id1,state.id2,data,state.player1,state.player2);
-function getCompareStats(id1, id2, data, player1, player2) {
-	cData = {	matches: 				0,
-						bothWin: 				0,
-						bothLose: 			0,
-						bothCaptain: 		0,
-						ties: 					0,
-						p1win: 0, p2win: 0,
-						p1cwin: 0, p2cwin: 0
-					};
+getCompareStats(state);
+
+state.playerArr.forEach( function(player){
+	var cpm = (player.captained / player.matches) * 100;
+	cpm = cpm.toString().substring(0,4);
+	player.captainPerMatch = cpm + "%";
+
+})
+
+if (state.id1 && state.id2) {
+	
+	document.getElementById("noCompareDiv").style.display = "none";
+	document.getElementById("compareDiv").style.display = "block";
+	displayComparison(state.cData);
+}
+
+function getCompareStats(state) {
+	// cData = {	matches: 				0,
+	// 					bothWin: 				0,
+	// 					bothLose: 			0,
+	// 					bothCaptain: 		0,
+	// 					ties: 					0,
+	// 					p1win: 0, p2win: 0,
+	// 					p1cwin: 0, p2cwin: 0
+	// 				};
 	// Loop through every match/player and gather data
 	data.forEach(function(match){
 		// Only looking at stats for PUG queue
@@ -97,7 +102,7 @@ function getCompareStats(id1, id2, data, player1, player2) {
 
 		match.players.forEach(function(player){
 			
-			if(compareTwo) { // if we are comparing two players
+			if(state.id1 && state.id2) { // if we are comparing two players
 				matchPlayerArr.push({	id: player.user.id,
 														 	name: player.user.name,
 														 	team: player.team,
@@ -109,68 +114,64 @@ function getCompareStats(id1, id2, data, player1, player2) {
 			state.playerArr.find((stored,i) => {
 				if(stored.id == player.user.id) {
 						state.playerArr[i] = {  id: 				stored.id, 
-															name: 			stored.name, 
-															matches: 		stored.matches + 1, 
-															captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
-															win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
-															loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
+																		name: 			stored.name, 
+																		matches: 		stored.matches + 1, 
+																		captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
+																		win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
+																		loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
 														}
 				return true; // return true == .find() is done			
 				}
 			})
 		});
 		
-		if(compareTwo) {
+		if(state.id1 && state.id2) {
 			var found1 = false, found2 = false;
 			matchPlayerArr.forEach((player) => {
-				if (parseInt(player.id) === parseInt(id1)) {
+				if (parseInt(player.id) === parseInt(state.id1)) {
 					found1 = true;
 					fp1 = player;
 				}
-				if (parseInt(player.id) === parseInt(id2)) {
+				if (parseInt(player.id) === parseInt(state.id2)) {
 					found2 = true;
 					fp2 = player;
 				}
 			});
 			if(found1 && found2) {
-				cData.matches = cData.matches + 1;
+				state.cData.matches = state.cData.matches + 1;
 				//both captained
 				if(fp1.captain && fp2.captain) {
-					cData.bothCaptain = cData.bothCaptain + 1;
+					state.cData.bothCaptain = state.cData.bothCaptain + 1;
 					if (fp1.team == match.winningTeam) {
-						cData.p1cwin++;
+						state.cData.p1cwin++;
 					}
 					if (fp2.team == match.winningTeam) {
-						cData.p2cwin++;
+						state.cData.p2cwin++;
 					}
 				}
 				//both win together
 				if(match.winningTeam == fp1.team && match.winningTeam == fp2.team) {
-					cData.bothWin++;
+					state.cData.bothWin++;
 				}
 				//both lose
 				if(match.winningTeam != fp1.team && match.winningTeam != fp2.team && match.winningTeam != 0) {
-					cData.bothLose++;
+					state.cData.bothLose++;
 				}
-				//wins & losses
+				//wins
 				if(fp1.team != fp2.team && match.winningTeam == fp1.team) {
-					cData.p1win++;
+					state.cData.p1win++;
 				}
 				if(fp1.team != fp2.team && match.winningTeam == fp2.team) {
-					cData.p2win++;
+					state.cData.p2win++;
 				}
+				//ties
 				if(match.winningTeam == 0) {
-					cData.ties = cData.ties +1;
+					state.cData.ties = state.cData.ties +1;
 				}
 			}
-
 		}
-		// console.log(matchPlayerArr);
 	})
-	return cData;
 }
-
-// displayPlayers();
 
 if(state.id1) {
 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
@@ -179,51 +180,37 @@ if(state.id2) {
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 }
 
-if(compareTwo) {
-	document.getElementById("noCompareDiv").style.display = "none";
-	document.getElementById("compareDiv").style.display = "block";
-		
-	displayComparison(state.cData);
-}
 
-state.playerArr.forEach( function(player){
-	var cpm = (player.captained / player.matches) * 100;
-	cpm = cpm.toString().substring(0,4);
-	player.captainPerMatch = cpm + "%";
-
-})
 
 function onPlayerClick(id){
 	if (state.id1 == null){
 		state.id1=id;
-	}
-	else if (state.id1 == id) {
+	}	else if (state.id1 == id){
 		state.id1 = null;
+		// state.id2 = null;
+	} else if (state.id2 == id){
 		state.id2 = null;
-	}
-	else if (state.id2 == id){
-		state.id2 = null;
-	}
-	else if (state.id1 && ! state.id2) {
+	} else if (state.id1 && ! state.id2){
 		state.id2 = id;
-	}
-	else if (state.id1 && state.id2) {
-		state.id2 = id;
-	}
-
-	cData = getCompareStats(state.id1,state.id2,data,state.player1,state.player2);
-	if(state.id1) {
-		displayPlayer(state.player1.name, cData.p1cwin, cData.p1win, cData.p2win, state.player1.htmlId);
-	}
-	if(state.id2) {
-		displayPlayer(state.player2.name, cData.p2cwin, cData.p2win, cData.p1win, player2.htmlId);
-	}
+	} else if (state.id1 && state.id2){
+		state.id2 = id;}
+	init(state)
+	getCompareStats(state);
+	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
+	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
 	displayIndexTable();
+	if (state.id1 && state.id2) {	
+		document.getElementById("noCompareDiv").style.display = "none";
+		document.getElementById("compareDiv").style.display = "block";
+		displayComparison(state.cData)
+	} else {
+		document.getElementById("noCompareDiv").style.display = "block";
+		document.getElementById("compareDiv").style.display = "none"; 
+	}
 
 }
 
 function onTheadClick(key) {
-	console.log("ontableclick" + key);
 	switch(key) {
   case "name":
   	state.compFn = compName;
@@ -291,7 +278,10 @@ function displayIndexTable() {
 				return;
 			}
 			if(key == "name") {
-				td.appendChild( getIdLink( player['id'], player[key]));
+				td.appendChild( document.createTextNode(player[key]))
+				// td.setAttribute("class", "h5");
+				
+				// td.appendChild( getIdLink( player['id'], player[key]));
 			}
 			else {
 				td.appendChild(document.createTextNode( player[key]));
@@ -305,6 +295,27 @@ function displayIndexTable() {
 	playersTable.appendChild(tbody);
 }
 
+// View stuff
+function displayPlayer(name, cWins, wins, losses, htmlId) {
+	document.getElementById(htmlId + "Name")  
+		.innerHTML =                                      name;
+	document.getElementById(htmlId + "cWins") 
+	  .innerHTML = "Capt vs Capt wins: "        + cWins;
+	document.getElementById(htmlId + "Wins")  
+		.innerHTML = "Wins: " 	+ wins;
+	document.getElementById(htmlId + "Losses")
+		.innerHTML = "Losses: " + losses;
+}
+
+function displayComparison(cData) {
+	document.getElementById("matches").innerHTML 			= cData.matches;
+	document.getElementById("bothWin").innerHTML 			= cData.bothWin;
+	document.getElementById("bothLose").innerHTML 		= cData.bothLose;
+	document.getElementById("bothCaptain").innerHTML 	= cData.bothCaptain;
+	document.getElementById("ties").innerHTML 				= cData.ties;
+}
+
+// relic code; url parameter navigation
 function getIdLink(id,name) {
 	var url_string = window.location.href
 	var url = new URL(url_string);
@@ -336,26 +347,6 @@ function getIdLink(id,name) {
 	return a;
 }
 
-// View stuff
-function displayPlayer(name, cWins, wins, losses, htmlId) {
-	document.getElementById(htmlId + "Name")  
-		.innerHTML =                                      name;
-	document.getElementById(htmlId + "cWins") 
-	  .innerHTML = "Capt vs Capt wins: "        + cWins;
-	document.getElementById(htmlId + "Wins")  
-		.innerHTML = "Wins: " 	+ wins;
-	document.getElementById(htmlId + "Losses")
-		.innerHTML = "Losses: " + losses;
-}
-
-function displayComparison(cData) {
-	document.getElementById("matches").innerHTML 			= cData.matches;
-	document.getElementById("bothWin").innerHTML 			= cData.bothWin;
-	document.getElementById("bothLose").innerHTML 		= cData.bothLose;
-	document.getElementById("bothCaptain").innerHTML 	= cData.bothCaptain;
-	document.getElementById("ties").innerHTML 				= cData.ties;
-}
-
 });
 
 // Utils
@@ -363,6 +354,7 @@ function captainPerMatch(player)
 {	return (player.captained / player.matches);
 }
 
+// Compare functions for sorting
 function compName( a, b ) {
   if ( a.name < b.name ){
     return -1;

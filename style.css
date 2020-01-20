@@ -11,3 +11,4 @@ th     { background:#eee; }
 #compareDiv {display: none;}
 
 thead {cursor: pointer;}
+tbody tr {cursor: pointer;}
