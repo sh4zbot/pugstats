@@ -7,3 +7,5 @@ th, td { padding: 8px 16px; }
 th     { background:#eee; }
 .active { background-color: #b3feb1; }
 .opponent { background-color: #fc9f7d; }
+
+#compareDiv {display: none;}
