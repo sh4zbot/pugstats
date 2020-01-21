@@ -14,7 +14,7 @@ init(state);//big TODO: make all functions return state, never touch global stat
 function getPlayerMatches(data,playerid) {
 	const res = data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
-		{return false;}
+		{ return false;}
 		const found = match.players.find(function(player){
 			// console.log(player.user.id)
 			// console.log(playerid)
@@ -33,19 +33,23 @@ function matchesToTimelineData(matches, userid) {
 							}
 
 	var dataset = { label: "win/loss",
-								  data: []};
+								  data: [],
+									backgroundColor: "#A569BD"};
 	var win = 0;
 	var loss = 0;
 	var pickOrder = [];
 	var pickCount = 0;
 	var pickData = [];
 	matches.forEach(function (match) {
-		pickCount++;
 		var player = match.players.find(function(player){
 			return player.user.id == userid;
 		});
-		pickOrder.push(player.pickOrder);
-		pickData.push({t: match.timestamp, y: pickOrder.reduce((a, b) => a + b, 0) / pickCount});
+		//only collect pickorder when not captain
+		if (player.captain == 0) {
+			pickCount++;
+			pickOrder.push(player.pickOrder);
+			pickData.push({t: match.timestamp, y: pickOrder.reduce((a, b) => a + b, pickOrder[0]) / pickCount});
+		}
 		if (match.winningTeam == 0) {
 			return;
 		}
@@ -63,7 +67,8 @@ function matchesToTimelineData(matches, userid) {
 	})
 
 	var pods = { label: "avg pickorder",
-							 data: pickData
+							 data: pickData,
+							 backgroundColor: "#D7DBDD"
 						 };
 
 	
@@ -444,7 +449,8 @@ function winLossChart(data, htmlId) {
                     unit: 'month'
                 }
             }]
-        }
+        },
+        responsive: true
     }
 	});
 

@@ -12,11 +12,93 @@
 </head>
 <body>
 	<div class="container">
+
+		<!-- row layout -->
+<!-- 		<div class="row">
+			<div class="col-2">
+				<div class="row">
+						
+						<div class="col">
+							<h1 id="p1Name"> n/a </h1>
+							<span id="p1cWins"> </span>
+							<br/>
+							<span id="p1Wins"></span>
+							<br/>
+							<span id="p1Losses"></span>
+							<br/>
+							</div>
+					</div>
+				<div class="row">
+					<div class="col d-flex">
+						<div id=noCompareDiv class="justify-content-center align-self-center">
+							<h2> Click two players</h2>
+						</div>
+						<div id="compareDiv" class="justify-content-center align-self-center">
+							<table class="ctable mx-auto">
+								<tbody>
+										<tr>
+											<td>matches</td>
+											<td id="matches"></td>
+										</tr>
+										<tr>
+											<td>wins together</td>
+											<td id="bothWin"></td>
+										</tr>
+										<tr>
+											<td>losses together</td>
+											<td id="bothLose"></td>
+										</tr>
+										<tr>
+											<td>captained each other</td>
+											<td id="bothCaptain"></td>
+										</tr>
+										<tr>
+											<td>ties</td>
+											<td id="ties"></td>
+										</tr>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="row">
+						<div class="col">
+							<h1 id="p2Name"> n/a </h1>
+							<span id="p2cWins"> </span>
+							<br/>
+							<span id="p2Wins"></span>
+							<br/>
+							<span id="p2Losses"></span>
+							<br/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-10">
+				<div class="row">
+					<div class="col">
+						<canvas id="chart1" height="70" ></canvas>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<canvas id="chart2" height="70" ></canvas>
+					</div>
+				</div>
+			</div>
+		</div> -->
+
+
+
+<!-- col layout -->
+
 		<div class="row">
-			<div class="col text-center">
+			<div class="col-5 text-center">
 				<div class="row">
 						<div class="col">
-							<canvas id="chart1" width="400" height="400"></canvas>
+							<canvas id="chart1" width="400" height="200"></canvas>
 						</div>
 				</div>
 				<div class="row">
@@ -31,42 +113,42 @@
 					</div>
 				</div>
 			</div>
-			<div class="col d-flex">
+			<div class="col-2 d-flex">
 				<div id=noCompareDiv class="justify-content-center align-self-center">
 					<h2> Click two players</h2>
 				</div>
 				<div id="compareDiv" class="justify-content-center align-self-center">
-				<table class="ctable mx-auto">
-					<tbody>
-							<tr>
-								<td>matches</td>
-								<td id="matches"></td>
-							</tr>
-							<tr>
-								<td>wins together</td>
-								<td id="bothWin"></td>
-							</tr>
-							<tr>
-								<td>losses together</td>
-								<td id="bothLose"></td>
-							</tr>
-							<tr>
-								<td>captained each other</td>
-								<td id="bothCaptain"></td>
-							</tr>
-							<tr>
-								<td>ties</td>
-								<td id="ties"></td>
-							</tr>
-						
-					</tbody>
-				</table>
+					<table class="ctable mx-auto">
+						<tbody>
+								<tr>
+									<td>matches</td>
+									<td id="matches"></td>
+								</tr>
+								<tr>
+									<td>wins together</td>
+									<td id="bothWin"></td>
+								</tr>
+								<tr>
+									<td>losses together</td>
+									<td id="bothLose"></td>
+								</tr>
+								<tr>
+									<td>captained each other</td>
+									<td id="bothCaptain"></td>
+								</tr>
+								<tr>
+									<td>ties</td>
+									<td id="ties"></td>
+								</tr>
+							
+						</tbody>
+					</table>
 				</div>
 			</div>
-			<div class="col text-center">
+			<div class="col-5 text-center">
 				<div class="row">
 					<div class="col">
-						<canvas id="chart2" width="400" height="400"></canvas>
+						<canvas id="chart2" width="400" height="200"></canvas>
 					</div>
 				</div>
 				<div class="row">
@@ -82,6 +164,10 @@
 				</div>
 			</div>
 		</div>
+
+
+
+
 		<div class="tableFixHead" id="players">
 	 		<table class="table" id="playersTable">
 	 			
