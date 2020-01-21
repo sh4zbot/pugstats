@@ -10,7 +10,7 @@ var compareTwo = state.id1 ? state.id2 ? true : false : false;
 init(state);//big TODO: make all functions return state, never touch global state
 
 
-//TODO: continue this for plotting
+
 function getPlayerMatches(data,playerid) {
 	const res = data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
@@ -25,6 +25,8 @@ function getPlayerMatches(data,playerid) {
 	return res;
 }
 
+
+
 function matchesToTimelineData(matches, userid) {
 	var data = {	labels: [],
 								datasets: []
@@ -34,10 +36,16 @@ function matchesToTimelineData(matches, userid) {
 								  data: []};
 	var win = 0;
 	var loss = 0;
+	var pickOrder = [];
+	var pickCount = 0;
+	var pickData = [];
 	matches.forEach(function (match) {
+		pickCount++;
 		var player = match.players.find(function(player){
 			return player.user.id == userid;
 		});
+		pickOrder.push(player.pickOrder);
+		pickData.push({t: match.timestamp, y: pickOrder.reduce((a, b) => a + b, 0) / pickCount});
 		if (match.winningTeam == 0) {
 			return;
 		}
@@ -53,10 +61,16 @@ function matchesToTimelineData(matches, userid) {
 		}
 		// data.labels.push(new Date( match.timestamp));
 	})
+
+	var pods = { label: "avg pickorder",
+							 data: pickData
+						 };
+
 	
+
 	data.datasets.push(dataset);
-	data.datasets.lineTension = 0;
-	console.log(data);
+	data.datasets.push(pods);
+	console.log(pods);
 	return data;
 }
 
@@ -421,7 +435,7 @@ function winLossChart(data, htmlId) {
 	    options: {
         scales: {
         		yAxes: [{ 
-        				ticks: {min: 0, max: 2}
+        				// ticks: {min: 0, max: 2}
         		}],
 
             xAxes: [{
