@@ -2,8 +2,10 @@
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js"
 					integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
 	  			crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.bundle.min.js"></script>
 	<script type="text/javascript" src="data.json"></script>
 	<script type="text/javascript" src="pugdata.js"></script>
+	
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="style.css">
@@ -12,19 +14,28 @@
 	<div class="container">
 		<div class="row">
 			<div class="col text-center">
-				<h1 id="p1Name"> n/a </h1>
-				<span id="p1cWins"> </span>
-				<br/>
-				<span id="p1Wins"></span>
-				<br/>
-				<span id="p1Losses"></span>
-				<br/>
+				<div class="row">
+						<div class="col">
+							<canvas id="chart1" width="400" height="400"></canvas>
+						</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<h1 id="p1Name"> n/a </h1>
+						<span id="p1cWins"> </span>
+						<br/>
+						<span id="p1Wins"></span>
+						<br/>
+						<span id="p1Losses"></span>
+						<br/>
+					</div>
+				</div>
 			</div>
-			<div class="col text-center">
-				<div id=noCompareDiv>
+			<div class="col d-flex">
+				<div id=noCompareDiv class="justify-content-center align-self-center">
 					<h2> Click two players</h2>
 				</div>
-				<div id="compareDiv">
+				<div id="compareDiv" class="justify-content-center align-self-center">
 				<table class="ctable mx-auto">
 					<tbody>
 							<tr>
@@ -53,13 +64,22 @@
 				</div>
 			</div>
 			<div class="col text-center">
-				<h1 id="p2Name"> n/a </h1>
-				<span id="p2cWins"> </span>
-				<br/>
-				<span id="p2Wins"></span>
-				<br/>
-				<span id="p2Losses"></span>
-				<br/>
+				<div class="row">
+					<div class="col">
+						<canvas id="chart2" width="400" height="400"></canvas>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+					<h1 id="p2Name"> n/a </h1>
+					<span id="p2cWins"> </span>
+					<br/>
+					<span id="p2Wins"></span>
+					<br/>
+					<span id="p2Losses"></span>
+					<br/>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="tableFixHead" id="players">
@@ -67,5 +87,6 @@
 	 			
 	 		</table>
  		</div>
+
 	</div>
 </body>
