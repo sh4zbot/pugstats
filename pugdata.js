@@ -38,16 +38,14 @@ function matchesToTimelineData(matches, userid) {
 		var player = match.players.find(function(player){
 			return player.user.id == userid;
 		});
+		if (match.winningTeam == 0) {
+			return;
+		}
 		if (player.team == match.winningTeam) {
 			win++;
 		} else {
 			loss++;
 		}
-		// if(loss == 0) {
-		// 	dataset.data.push( win);
-		// } else {
-		// 	dataset.data.push( win/loss); 
-		// }
 		if(loss == 0) {
 			dataset.data.push( { t: match.timestamp, y: win });
 		} else {
@@ -423,7 +421,7 @@ function winLossChart(data, htmlId) {
 	    options: {
         scales: {
         		yAxes: [{ 
-        				ticks: {min: 0, max: 1}
+        				ticks: {min: 0, max: 2}
         		}],
 
             xAxes: [{
