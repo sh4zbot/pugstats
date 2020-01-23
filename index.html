@@ -93,12 +93,13 @@
 
 
 <!-- col layout -->
-
 		<div class="row">
 			<div class="col-5 text-center">
 				<div class="row">
 						<div class="col">
 							<canvas id="chart1" width="400" height="200"></canvas>
+							<input id="datemin1" type="date" />
+							<input id="datemax1" type="date" />
 						</div>
 				</div>
 				<div class="row">
@@ -120,29 +121,31 @@
 				<div id="compareDiv" class="justify-content-center align-self-center">
 					<table class="ctable mx-auto">
 						<tbody>
-								<tr>
-									<td>matches</td>
-									<td id="matches"></td>
-								</tr>
-								<tr>
-									<td>wins together</td>
-									<td id="bothWin"></td>
-								</tr>
-								<tr>
-									<td>losses together</td>
-									<td id="bothLose"></td>
-								</tr>
-								<tr>
-									<td>captained each other</td>
-									<td id="bothCaptain"></td>
-								</tr>
-								<tr>
-									<td>ties</td>
-									<td id="ties"></td>
-								</tr>
-							
+							<tr>
+								<td>matches</td>
+								<td id="matches"></td>
+							</tr>
+							<tr>
+								<td>wins together</td>
+								<td id="bothWin"></td>
+							</tr>
+							<tr>
+								<td>losses together</td>
+								<td id="bothLose"></td>
+							</tr>
+							<tr>
+								<td>captained each other</td>
+								<td id="bothCaptain"></td>
+							</tr>
+							<tr>
+								<td>ties</td>
+								<td id="ties"></td>
+							</tr>
 						</tbody>
 					</table>
+
+
+
 				</div>
 			</div>
 			<div class="col-5 text-center">
@@ -164,6 +167,8 @@
 				</div>
 			</div>
 		</div>
+
+		<!--  -->
 
 
 

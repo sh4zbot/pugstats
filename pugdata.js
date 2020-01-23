@@ -9,12 +9,38 @@ var compareTwo = state.id1 ? state.id2 ? true : false : false;
 
 init(state);//big TODO: make all functions return state, never touch global state
 
+//TODO: generalize use this
+// function addDateOnChangeListener(htmlId) {
+// 	document.getElementById(htmlId).addEventListener("change", function(e){
+// 		state[htmlId] = new Date(e.target.value).getTime();
+// 	})
+// 	console.log(state[htmlId]);
+// }
 
+// addDateOnChangeListener("datemin1");
+// addDateOnChangeListener("datemax1");
 
-function getPlayerMatches(data,playerid) {
+//TODO: fix charts
+document.getElementById('datemin1').addEventListener("change", function(e){
+	state['datemin1'] = new Date(e.target.value).getTime();
+	var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
+	addData(state.chart1, chartData);
+})
+
+document.getElementById("datemax1").addEventListener("change", function(e){
+	state.datemax1 = new Date(e.target.value).getTime();
+	// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.chart1), "chart1");
+	var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
+		addData(state.chart1, chartData);
+})
+
+function getPlayerMatches(data,playerid,mintime,maxtime) {
 	const res = data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
 		{ return false;}
+		if (match.timestamp < mintime || match.timestamp > maxtime) {
+			return;
+		}
 		const found = match.players.find(function(player){
 			// console.log(player.user.id)
 			// console.log(playerid)
@@ -24,8 +50,6 @@ function getPlayerMatches(data,playerid) {
 	})
 	return res;
 }
-
-
 
 function matchesToTimelineData(matches, userid) {
 	var data = {	labels: [],
@@ -75,7 +99,7 @@ function matchesToTimelineData(matches, userid) {
 
 	data.datasets.push(dataset);
 	data.datasets.push(pods);
-	console.log(pods);
+	// console.log(pods);
 	return data;
 }
 
@@ -148,8 +172,8 @@ function getCpm()
 }
 
 
-if (state.id1 && state.id2) {
-	
+
+if (state.id1 && state.id2) {	
 	document.getElementById("noCompareDiv").style.display = "none";
 	document.getElementById("compareDiv").style.display = "block";
 	displayComparison(state.cData);
@@ -277,11 +301,20 @@ function onPlayerClick(id){
 	displayIndexTable();
 	// console.log("getPlayerMatches")
 	// console.log( matchesToTimelineData( getPlayerMatches(data, state.id1),state.id1 ) );
+	// console.log(state.datemin1);
+	// console.log(state.datemax1);
 	if(state.id1){
-		winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id1),state.id1 ), "chart1");
+		removeData(state.chart1)
+		// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id1),state.id1 ), "chart1");
+		var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
+		addData(state.chart1, chartData);
 	}
 	if(state.id2){
-		winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id2),state.id2), "chart2");
+		removeData(state.chart1)
+		// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id2),state.id2), "chart2");
+		var chartData = matchesToTimelineData( getPlayerMatches(data, state.id2),state.id2);
+		addData(state.chart2, chartData);
+		console.log(state.chart2);
 	}
 	if (state.id1 && state.id2) {	
 		document.getElementById("noCompareDiv").style.display = "none";
@@ -431,10 +464,12 @@ function getIdLink(id,name) {
 	return a;
 }
 
-// Charts
-function winLossChart(data, htmlId) {
+state.chart1 = createChart("chart1");
+state.chart2 = createChart("chart2");
+
+function createChart(htmlId) {
 	var ctx = document.getElementById(htmlId).getContext('2d');
-	var myChart = new Chart(ctx, {
+	return new Chart(ctx, {
 	    type: 'line',
 	    data: data,
 	    options: {
@@ -453,12 +488,19 @@ function winLossChart(data, htmlId) {
         responsive: true
     }
 	});
-
 }
 
-
-
-});
+//Charts
+// function winLossChart(data, chart) {
+// 	// var ctx = document.getElementById(htmlId).getContext('2d');
+// 	if(chart.data) {
+// 	chart.data.labels.pop();
+//   chart.data.datasets.forEach((dataset) => {
+//       dataset.data.pop();
+//   });
+//   chart.data = data;
+//   chart.update(); }
+// }
 
 // Utils
 function captainPerMatch(player)
@@ -497,4 +539,22 @@ function compLoss(a,b){
 function compCaptained(a,b) {
 	return b.captained- a.captained;
 }
+
+
+function addData(chart, data) {
+    chart.data = data;
+    chart.update();
+}
+
+function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
+}
+
+});
+
+
 
