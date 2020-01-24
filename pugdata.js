@@ -10,17 +10,20 @@ var compareTwo = state.id1 ? state.id2 ? true : false : false;
 init(state);//big TODO: make all functions return state, never touch global state
 
 //TODO: generalize use this
-// function addDateOnChangeListener(htmlId) {
-// 	document.getElementById(htmlId).addEventListener("change", function(e){
-// 		state[htmlId] = new Date(e.target.value).getTime();
-// 	})
-// 	console.log(state[htmlId]);
-// }
+
 
 // addDateOnChangeListener("datemin1");
 // addDateOnChangeListener("datemax1");
 
-//TODO: fix charts
+function addDateOnChangeListener(htmlId) {
+	document.getElementById(htmlId).addEventListener("change", function(e){
+		state[htmlId] = new Date(e.target.value).getTime();
+	})
+	console.log(state[htmlId]);
+}
+
+
+
 document.getElementById('datemin1').addEventListener("change", function(e){
 	state['datemin1'] = new Date(e.target.value).getTime();
 	var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
@@ -170,7 +173,7 @@ function getCpm()
 {	state.playerArr.forEach( function(player){
 		var cpm = (player.captained / player.matches) * 100;
 		cpm = cpm.toString().substring(0,4);
-		player.captainPerMatch = cpm + "%";
+		player.cpm = cpm + "%";
 	})
 }
 
@@ -178,7 +181,7 @@ function getCWR() {
 	state.playerArr.forEach( function(player){
 		var cwr = (player.cwin / player.closs) * 100;
 		cwr = cwr.toString().substring(0,4);
-		player.captainWinPercent = cwr + "%";
+		player.cwr = cwr + "%";
 	})
 }
 
@@ -311,6 +314,7 @@ function onPlayerClick(id){
 	init(state) // TODO: remove this
 	getCompareStats(state);
 	getCpm(); //TODO this shouldnt be needed
+	getCWR();
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
 	displayIndexTable();
@@ -364,10 +368,23 @@ function onTheadClick(key) {
  		state.compFn = compLoss;
     displayIndexTable();
     break;
-  case "captainPerMatch":
+  case "cpm":
   	state.compFn = compCPM;
     displayIndexTable();
     break;
+  case "cwr":
+  	state.compFn = compCWR;
+    displayIndexTable();
+    break;
+  case "cwin":
+  	state.compFn = compcwin;
+    displayIndexTable();
+    break;
+  case "closs":
+		state.compFn = compcloss;
+  	displayIndexTable();
+  	break;
+
   default:
 	}
 }
@@ -405,15 +422,10 @@ function displayIndexTable() {
 			var td = document.createElement('td');
 			// dont display id
 			if(key == "id") {
-				// maybe need this further on
-				// tr.setAttribute("id", player[key]);
 				return;
 			}
 			if(key == "name") {
 				td.appendChild( document.createTextNode(player[key]))
-				// td.setAttribute("class", "h5");
-				
-				// td.appendChild( getIdLink( player['id'], player[key]));
 			}
 			else {
 				td.appendChild(document.createTextNode( player[key]));
@@ -447,7 +459,120 @@ function displayComparison(cData) {
 	document.getElementById("ties").innerHTML 				= cData.ties;
 }
 
+
+
+state.chart1 = createChart("chart1");
+state.chart2 = createChart("chart2");
+
+function createChart(htmlId) {
+	var ctx = document.getElementById(htmlId).getContext('2d');
+	return new Chart(ctx, {
+	    type: 'line',
+	    data: data,
+	    options: {
+        scales: {
+        		yAxes: [{ 
+        				// ticks: {min: 0, max: 2}
+        		}],
+
+            xAxes: [{
+                type: 'time',
+                // time: {
+                // 	unit: 'day'
+                // }
+                
+            }]
+        },
+        responsive: true
+    }
+	});
+}
+
+// Utils
+function cpm(player)
+{	return (player.captained / player.matches);
+}
+
+// function CWR(player){}
+
+// Compare functions for sorting
+function compName( a, b ) {
+  if ( a.name < b.name ){
+    return -1;
+  }
+  if ( a.name > b.name ){
+    return 1;
+  }
+  return 0;
+}
+
+function compCPM(a, b) {
+	cpma = cpm(a);
+	cpmb = cpm(b);
+	
+  return cpm(b) - cpm(a);
+}
+
+function compMatches(a,b){
+	return b.matches - a.matches;
+}
+
+function compWin(a,b){
+	return b.win - a.win;
+}
+function compLoss(a,b){
+	return b.loss - a.loss;
+}
+
+function compCaptained(a,b) {
+	return b.captained- a.captained;
+}
+
+function compCWR(a,b) {
+	return parseInt( b.cwr ) - parseInt( a.cwr );
+}
+
+function compcwin(a,b) {
+	return b.cwin- a.cwin;
+}
+
+function compcloss(a,b) {
+	return b.closs- a.closs;
+}
+
+
+
+
+function addData(chart, data) {
+    chart.data = data;
+    chart.update();
+}
+
+function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
+}
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // relic code; url parameter navigation
+
 function getIdLink(id,name) {
 	var url_string = window.location.href
 	var url = new URL(url_string);
@@ -478,96 +603,3 @@ function getIdLink(id,name) {
 	}
 	return a;
 }
-
-state.chart1 = createChart("chart1");
-state.chart2 = createChart("chart2");
-
-function createChart(htmlId) {
-	var ctx = document.getElementById(htmlId).getContext('2d');
-	return new Chart(ctx, {
-	    type: 'line',
-	    data: data,
-	    options: {
-        scales: {
-        		yAxes: [{ 
-        				// ticks: {min: 0, max: 2}
-        		}],
-
-            xAxes: [{
-                type: 'time',
-                
-            }]
-        },
-        responsive: true
-    }
-	});
-}
-
-//Charts
-// function winLossChart(data, chart) {
-// 	// var ctx = document.getElementById(htmlId).getContext('2d');
-// 	if(chart.data) {
-// 	chart.data.labels.pop();
-//   chart.data.datasets.forEach((dataset) => {
-//       dataset.data.pop();
-//   });
-//   chart.data = data;
-//   chart.update(); }
-// }
-
-// Utils
-function captainPerMatch(player)
-{	return (player.captained / player.matches);
-}
-
-// Compare functions for sorting
-function compName( a, b ) {
-  if ( a.name < b.name ){
-    return -1;
-  }
-  if ( a.name > b.name ){
-    return 1;
-  }
-  return 0;
-}
-
-function compCPM(a, b) {
-	cpma = captainPerMatch(a);
-	cpmb = captainPerMatch(b);
-	
-  return captainPerMatch(b) - captainPerMatch(a);
-}
-
-function compMatches(a,b){
-	return b.matches - a.matches;
-}
-
-function compWin(a,b){
-	return b.win - a.win;
-}
-function compLoss(a,b){
-	return b.loss - a.loss;
-}
-
-function compCaptained(a,b) {
-	return b.captained- a.captained;
-}
-
-
-function addData(chart, data) {
-    chart.data = data;
-    chart.update();
-}
-
-function removeData(chart) {
-    chart.data.labels.pop();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.pop();
-    });
-    chart.update();
-}
-
-});
-
-
-
