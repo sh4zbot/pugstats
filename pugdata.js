@@ -120,6 +120,8 @@ function init(state) {
 													 captained: 0,
 													 win: 0,
 									 				 loss: 0,
+									 				 cwin: 0,
+									 				 closs: 0,
 									});
 	
 	});
@@ -162,12 +164,21 @@ function init(state) {
 getCompareStats(state);
 console.log(state);
 getCpm();
+getCWR();
 
 function getCpm() 
 {	state.playerArr.forEach( function(player){
 		var cpm = (player.captained / player.matches) * 100;
 		cpm = cpm.toString().substring(0,4);
 		player.captainPerMatch = cpm + "%";
+	})
+}
+
+function getCWR() {
+	state.playerArr.forEach( function(player){
+		var cwr = (player.cwin / player.closs) * 100;
+		cwr = cwr.toString().substring(0,4);
+		player.captainWinPercent = cwr + "%";
 	})
 }
 
@@ -209,12 +220,16 @@ function getCompareStats(state) {
 
 			state.playerArr.find((stored,i) => {
 				if(stored.id == player.user.id) {
+						
+
 						state.playerArr[i] = {  id: 				stored.id, 
 																		name: 			stored.name, 
 																		matches: 		stored.matches + 1, 
 																		captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
 																		win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
 																		loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
+																		cwin: (player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
+																		closs: (match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
 														}
 				return true; // return true == .find() is done			
 				}
@@ -480,9 +495,7 @@ function createChart(htmlId) {
 
             xAxes: [{
                 type: 'time',
-                time: {
-                    unit: 'month'
-                }
+                
             }]
         },
         responsive: true
