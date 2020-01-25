@@ -1,31 +1,54 @@
-var state = {}; 
+var state = {data: data}; 
 
 document.addEventListener('DOMContentLoaded', (event) => {
-var url_string = window.location.href
-var url = new URL(url_string);
-state.id1 = url.searchParams.get("id1");
-state.id2 = url.searchParams.get("id2");
-var compareTwo = state.id1 ? state.id2 ? true : false : false;
 
-init(state);//big TODO: make all functions return state, never touch global state
+// Uncomment to handl URL id parameters
 
-//TODO: generalize use this
+// var url_string = window.location.href
+// var url = new URL(url_string);
+// state.id1 = url.searchParams.get("id1");
+// state.id2 = url.searchParams.get("id2");
+// var compareTwo = state.id1 ? state.id2 ? true : false : false;
+
+// if (state.id1 && state.id2) {	
+// 	displayComparison(state.cData);
+// }
+
+// if(state.id1) {
+// 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
+// }
+// if(state.id2) {
+// 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
+// }
 
 
-// addDateOnChangeListener("datemin");
-// addDateOnChangeListener("datemax");
+main();
 
-function addDateOnChangeListener(htmlId) {
-	document.getElementById(htmlId).addEventListener("change", function(e){
-		state[htmlId] = new Date(e.target.value).getTime();
-	})
-	// console.log(state[htmlId]);
+function main() {
+	init(state);
+	addDateOnChangeListener('datemin');
+	addDateOnChangeListener('datemax');
+	getCompareStats(state);
+	getCPM();
+	getCWR();
+	state.compFn = compMatches;
+	displayIndexTable();
 }
 
+// re-render everything
 function render() {
 	init(state)
+	var playerData = getPlayerData(state.id1)
+	var chartData = matchesToTimelineData(playerData.matches, state.id1);
+	pickOrderTable(playerData.picks, "pickOrderTable1");
+	addData(state.chart1, chartData);
+
+	playerData = getPlayerData(state.id2)
+	chartData = matchesToTimelineData(playerData.matches, state.id2);
+	pickOrderTable(playerData.picks, "pickOrderTable2");
+	addData(state.chart2, chartData);
 	getCompareStats(state);
-	getCpm(); //TODO this shouldnt be needed
+	getCPM(); 
 	getCWR();
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
@@ -35,48 +58,72 @@ function render() {
 	}
 }
 
+function init(state) {
+	state.playerArr = [];
+	state.players = {};
 
-document.getElementById('datemin').addEventListener("change", function(e){
-	state['datemin'] = new Date(e.target.value).getTime();
-	var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
-	var chartData = matchesToTimelineData(playerData.matches, state.id1);
-	pickOrderTable(playerData.picks, "pickOrderTable1");
-	addData(state.chart1, chartData);
+	data.forEach(function(match){
+		match.players.forEach(function(player){
+			state.players[player.user.id] = player.user.name;
+		})
+	})
 
-	playerData = getPlayerData(data, state.id2, state.datemin, state.datemax)
-	chartData = matchesToTimelineData(playerData.matches, state.id2);
-	pickOrderTable(playerData.picks, "pickOrderTable2");
-	addData(state.chart2, chartData);
-	render();
+	Object.keys(state.players).forEach(function(key) {
+		state.playerArr.push({ id: key, 
+													 name: state.players[key], 
+													 matches: 0, 
+													 captained: 0,
+													 win: 0,
+									 				 loss: 0,
+									 				 cwin: 0,
+									 				 closs: 0,
+									});
+	
+	});
 
-})
+	state.player1 = {	htmlId: "p1" };
+	state.player2 = {	htmlId: "p2" };
 
-document.getElementById("datemax").addEventListener("change", function(e){
-	state.datemax = new Date(e.target.value).getTime();
-	var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
-	var chartData = matchesToTimelineData( playerData.matches, state.id1);
-	pickOrderTable(playerData.picks, "pickOrderTable1");
-	addData(state.chart1, chartData);
+  // init player names
+	state.playerArr.find((stored,i) => {
+		if(stored.id == state.id1) {
+			state.player1.name = stored.name;
+		}
+		if(stored.id == state.id2) {
+			state.player2.name = stored.name;
+		}
+	});
+	
+	// combined data for both compared players
+	state.cData = {	matches: 				0,
+									bothWin: 				0,
+									bothLose: 			0,
+									bothCaptain: 		0,
+									ties: 					0,
+									p1win: 0, p2win: 0,
+									p1cwin: 0, p2cwin: 0,
+								};
 
-	playerData = getPlayerData(data, state.id2, state.datemin, state.datemax)
-	chartData = matchesToTimelineData(playerData.matches, state.id2);
-	pickOrderTable(playerData.picks, "pickOrderTable2");
-	addData(state.chart2, chartData);
-	render();
-})
-function ifnotthenmake() {
-
+	
+	state.chart1 = createChart("chart1");
+	state.chart2 = createChart("chart2");
 }
 
-function getPlayerData(data,playerid,mintime,maxtime) {
+
+
+/*	
+ *	Data 
+ */
+
+function getPlayerData(playerid) {
 	var picks = [];
 	for(i=1;i<=12;i++){
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
-	const res = data.filter(function(match) {
+	const res = state.data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
 		{ return false;}
-		if (match.timestamp < mintime || match.timestamp > maxtime) {
+		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
 		}
 		const found = match.players.find(function(player){
@@ -135,11 +182,10 @@ function matchesToTimelineData(matches, userid) {
 			loss++;
 		}
 		if(loss == 0) {
-			dataset.data.push( { t: match.timestamp, y: win });
+			dataset.data.push({ t: match.timestamp, y: win });
 		} else {
-			dataset.data.push({t: match.timestamp, y: win/loss}); 
+			dataset.data.push({ t: match.timestamp, y: win/loss}); 
 		}
-		// data.labels.push(new Date( match.timestamp));
 	})
 
 	var pods = { label: "avg pickorder",
@@ -151,106 +197,11 @@ function matchesToTimelineData(matches, userid) {
 
 	data.datasets.push(dataset);
 	data.datasets.push(pods);
-	// console.log(pods);
 	return data;
 }
 
-function init(state) {
-	state.playerArr = [];
-	state.players = {};
-
-	data.forEach(function(match){
-		match.players.forEach(function(player){
-			state.players[player.user.id] = player.user.name;
-		})
-	})
-
-	Object.keys(state.players).forEach(function(key) {
-		state.playerArr.push({ id: key, 
-													 name: state.players[key], 
-													 matches: 0, 
-													 captained: 0,
-													 win: 0,
-									 				 loss: 0,
-									 				 cwin: 0,
-									 				 closs: 0,
-									});
-	
-	});
-
-	// init player objects for comparison (only used if id1 and id2 is set)
-	state.player1 = {	//cWins:  0,
-										// wins:   0,
-										// losses: 0,
-										htmlId: "p1",
-									};
-	state.player2 = {	//cWins: 	0,
-										// wins: 	0,
-										// losses: 0,
-										htmlId: "p2",
-									};
-
-  // init player names
-	state.playerArr.find((stored,i) => {
-		if(stored.id == state.id1) {
-			state.player1.name = stored.name;
-		}
-		if(stored.id == state.id2) {
-			state.player2.name = stored.name;
-		}
-	});
-	
-	// combined data for both compared players
-	state.cData = {	matches: 				0,
-									bothWin: 				0,
-									bothLose: 			0,
-									bothCaptain: 		0,
-									ties: 					0,
-									p1win: 0, p2win: 0,
-									p1cwin: 0, p2cwin: 0,
-								};
-
-}
-
-// todo: remove all params
-getCompareStats(state);
-console.log(state);
-getCpm();
-getCWR();
-
-function getCpm() 
-{	state.playerArr.forEach( function(player){
-		var cpm = (player.captained / player.matches) * 100;
-		cpm = cpm.toString().substring(0,4);
-		player.cpm = cpm + "%";
-	})
-}
-
-function getCWR() {
-	state.playerArr.forEach( function(player){
-		var cwr = (player.cwin / player.closs) /// 2 * 100;
-		cwr = cwr.toString().substring(0,4);
-		player.cwr = cwr //+ "%";
-	})
-}
-
-
-
-if (state.id1 && state.id2) {	
-	// document.getElementById("noCompareDiv").style.display = "none";
-	// document.getElementById("compareDiv").style.display = "block";
-	displayComparison(state.cData);
-}
 
 function getCompareStats(state) {
-	// cData = {	matches: 				0,
-	// 					bothWin: 				0,
-	// 					bothLose: 			0,
-	// 					bothCaptain: 		0,
-	// 					ties: 					0,
-	// 					p1win: 0, p2win: 0,
-	// 					p1cwin: 0, p2cwin: 0
-	// 				};
 	// Loop through every match/player and gather data
 	data.forEach(function(match){
 		// Only looking at stats for PUG queue
@@ -337,11 +288,15 @@ function getCompareStats(state) {
 	})
 }
 
-if(state.id1) {
-	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
-}
-if(state.id2) {
-	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
+/*
+ * Click handlers
+ */
+
+function addDateOnChangeListener(htmlId) {
+	document.getElementById(htmlId).addEventListener("change", function(e){
+		state[htmlId] = new Date(e.target.value).getTime();
+		render();
+	})
 }
 
 function onPlayerClick(id){
@@ -362,21 +317,6 @@ function onPlayerClick(id){
 	} else if (state.id1 && state.id2){
 		state.id2 = id;}
 	render();
-	if(state.id1){
-		removeData(state.chart1)
-		var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
-		pickOrderTable(playerData.picks, "pickOrderTable1");
-		var chartData = matchesToTimelineData(playerData.matches, state.id1);
-		addData(state.chart1, chartData);
-	}
-	if(state.id2){
-		removeData(state.chart2)
-		var playerData = getPlayerData(data, state.id2, state.datemin, state.datemax);
-		pickOrderTable(playerData.picks, "pickOrderTable2");
-		var chartData = matchesToTimelineData( playerData.matches,state.id2);
-		addData(state.chart2, chartData);
-	}
-
 }
 
 function onTheadClick(key) {
@@ -417,13 +357,9 @@ function onTheadClick(key) {
 		state.compFn = compcloss;
   	displayIndexTable();
   	break;
-
   default:
 	}
 }
-
-state.compFn = compMatches;
-displayIndexTable();
 
 function pickOrderTable(pickOrder,htmlId) {
 	var table = document.getElementById(htmlId);
@@ -521,11 +457,6 @@ function displayComparison(cData) {
 	document.getElementById("ties").innerHTML 				= cData.ties;
 }
 
-
-
-state.chart1 = createChart("chart1");
-state.chart2 = createChart("chart2");
-
 function createChart(htmlId) {
 	var ctx = document.getElementById(htmlId).getContext('2d');
 	return new Chart(ctx, {
@@ -550,9 +481,43 @@ function createChart(htmlId) {
 	});
 }
 
-// Utils
+//Utils
+
+function getCPM() 
+{	state.playerArr.forEach( function(player){
+		if( player.matches == 0) {
+			player.cpm = "0%";
+			console.log("matcehs == 0")
+		} else {
+			var cpm = (player.captained / player.matches) * 100;
+			cpm = cpm.toString().substring(0,4);
+			player.cpm = cpm + "%";
+		}
+		
+	})
+}
+
+function getCWR() {
+	state.playerArr.forEach( function(player){
+		if( player.closs == 0) {
+			player.cwr = player.cwin;
+		}
+		else {
+			var cwr = (player.cwin / player.closs) /// 2 * 100;
+			cwr = cwr.toString().substring(0,4);
+			player.cwr = cwr //+ "%";
+		}
+		
+	})
+}
+
 function cpm(player)
-{	return (player.captained / player.matches);
+{	if(player.matches == 0 ){
+	return 0;
+	}
+	else{
+		return (player.captained / player.matches);
+	}
 }
 
 // function CWR(player){}
@@ -591,7 +556,7 @@ function compCaptained(a,b) {
 }
 
 function compCWR(a,b) {
-	return parseInt( b.cwr ) - parseInt( a.cwr );
+	return parseFloat( b.cwr ) - parseFloat( a.cwr );
 }
 
 function compcwin(a,b) {
