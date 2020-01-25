@@ -12,8 +12,8 @@ init(state);//big TODO: make all functions return state, never touch global stat
 //TODO: generalize use this
 
 
-// addDateOnChangeListener("datemin1");
-// addDateOnChangeListener("datemax1");
+// addDateOnChangeListener("datemin");
+// addDateOnChangeListener("datemax");
 
 function addDateOnChangeListener(htmlId) {
 	document.getElementById(htmlId).addEventListener("change", function(e){
@@ -22,22 +22,47 @@ function addDateOnChangeListener(htmlId) {
 	// console.log(state[htmlId]);
 }
 
+function render() {
+	init(state)
+	getCompareStats(state);
+	getCpm(); //TODO this shouldnt be needed
+	getCWR();
+	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
+	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
+	displayIndexTable();
+	if (state.id1 && state.id2) {	
+		displayComparison(state.cData)
+	}
+}
 
 
-document.getElementById('datemin1').addEventListener("change", function(e){
-	state['datemin1'] = new Date(e.target.value).getTime();
-	var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
+document.getElementById('datemin').addEventListener("change", function(e){
+	state['datemin'] = new Date(e.target.value).getTime();
+	var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
 	var chartData = matchesToTimelineData(playerData.matches, state.id1);
-	pickOrderTable(playerData.picks);
+	pickOrderTable(playerData.picks, "pickOrderTable1");
 	addData(state.chart1, chartData);
+
+	playerData = getPlayerData(data, state.id2, state.datemin, state.datemax)
+	chartData = matchesToTimelineData(playerData.matches, state.id2);
+	pickOrderTable(playerData.picks, "pickOrderTable2");
+	addData(state.chart2, chartData);
+	render();
+
 })
 
-document.getElementById("datemax1").addEventListener("change", function(e){
-	state.datemax1 = new Date(e.target.value).getTime();
-	var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
+document.getElementById("datemax").addEventListener("change", function(e){
+	state.datemax = new Date(e.target.value).getTime();
+	var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
 	var chartData = matchesToTimelineData( playerData.matches, state.id1);
-	pickOrderTable(playerData.picks);
+	pickOrderTable(playerData.picks, "pickOrderTable1");
 	addData(state.chart1, chartData);
+
+	playerData = getPlayerData(data, state.id2, state.datemin, state.datemax)
+	chartData = matchesToTimelineData(playerData.matches, state.id2);
+	pickOrderTable(playerData.picks, "pickOrderTable2");
+	addData(state.chart2, chartData);
+	render();
 })
 function ifnotthenmake() {
 
@@ -232,6 +257,9 @@ function getCompareStats(state) {
 	 	if (match.queue.id != 1548704432021) {
 	 		return;
 	 	}
+	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
+			return;
+		}
 		var matchPlayerArr = [];
 
 		match.players.forEach(function(player){
@@ -247,8 +275,6 @@ function getCompareStats(state) {
 
 			state.playerArr.find((stored,i) => {
 				if(stored.id == player.user.id) {
-						
-
 						state.playerArr[i] = {  id: 				stored.id, 
 																		name: 			stored.name, 
 																		matches: 		stored.matches + 1, 
@@ -335,35 +361,20 @@ function onPlayerClick(id){
 		state.id2 = id;
 	} else if (state.id1 && state.id2){
 		state.id2 = id;}
-	init(state) // TODO: remove this
-	getCompareStats(state);
-	getCpm(); //TODO this shouldnt be needed
-	getCWR();
-	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
-	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
-	displayIndexTable();
+	render();
 	if(state.id1){
 		removeData(state.chart1)
-		// winLossChart( matchesToTimelineData( getPlayerData(data, state.id1),state.id1 ), "chart1");
-		var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
-		pickOrderTable(playerData.picks);
+		var playerData = getPlayerData(data, state.id1, state.datemin, state.datemax)
+		pickOrderTable(playerData.picks, "pickOrderTable1");
 		var chartData = matchesToTimelineData(playerData.matches, state.id1);
 		addData(state.chart1, chartData);
 	}
 	if(state.id2){
-		removeData(state.chart1)
-		var playerData = getPlayerData(data, state.id2);
+		removeData(state.chart2)
+		var playerData = getPlayerData(data, state.id2, state.datemin, state.datemax);
+		pickOrderTable(playerData.picks, "pickOrderTable2");
 		var chartData = matchesToTimelineData( playerData.matches,state.id2);
 		addData(state.chart2, chartData);
-		// console.log(state.chart2);
-	}
-	if (state.id1 && state.id2) {	
-		// document.getElementById("noCompareDiv").style.display = "none";
-		// document.getElementById("compareDiv").style.display = "block";
-		displayComparison(state.cData)
-	} else {
-		// document.getElementById("noCompareDiv").style.display = "block";
-		// document.getElementById("compareDiv").style.display = "none"; 
 	}
 
 }
@@ -414,12 +425,22 @@ function onTheadClick(key) {
 state.compFn = compMatches;
 displayIndexTable();
 
-function pickOrderTable(pickOrder) {
-	console.log(pickOrder);
-	var table = document.getElementById("pickOrderTable").getElementsByTagName('tbody')[0];
-	table.innerHTML = "";
+function pickOrderTable(pickOrder,htmlId) {
+	var table = document.getElementById(htmlId);
+	table.innerHTML="";
+	var thead = document.createElement("thead");
+	thead.setAttribute("class", "text-center");
+	var tr = thead.insertRow()
+	var columnHeaders = ["pick", "win", "loss", "tie", "w/l"];
+	columnHeaders.forEach(function(e) {
+		var th = document.createElement("th");
+		th.innerHTML = e;	
+		tr.appendChild(th);
+	})
+	table.appendChild(thead);
+	var tbody = document.createElement("tbody");
 	pickOrder.forEach(function(po,i){
-		var tr = table.insertRow();
+		var tr = tbody.insertRow();
 		tr.insertCell().appendChild(document.createTextNode('#' + (i+1)  ));
 		tr.insertCell().appendChild(document.createTextNode(po.win));
 		tr.insertCell().appendChild(document.createTextNode(po.loss));
@@ -429,6 +450,8 @@ function pickOrderTable(pickOrder) {
 			(po.win / po.loss ).toString().substring(0,4))
 		);	
 	})
+	table.appendChild(tbody)
+
 }
 
 function displayIndexTable() {
@@ -481,13 +504,13 @@ function displayIndexTable() {
 // View stuff
 function displayPlayer(name, cWins, wins, losses, htmlId) {
 	document.getElementById(htmlId + "Name")  
-		.innerHTML =                                      name;
+		.innerHTML = name;
 	document.getElementById(htmlId + "cWins") 
-	  .innerHTML = "Capt vs Capt wins: "        + cWins;
+	  .innerHTML = "Capt vs Capt wins: "  + cWins;
 	document.getElementById(htmlId + "Wins")  
-		.innerHTML = "Wins: " 	+ wins;
+		.innerHTML = "Wins: " 							+ wins;
 	document.getElementById(htmlId + "Losses")
-		.innerHTML = "Losses: " + losses;
+		.innerHTML = "Losses: " 						+ losses;
 }
 
 function displayComparison(cData) {
@@ -612,33 +635,33 @@ function removeData(chart) {
 
 // relic code; url parameter navigation
 
-function getIdLink(id,name) {
-	var url_string = window.location.href
-	var url = new URL(url_string);
-	var noParams = window.location.href.split('?')[0];
-	var a = document.createElement('a');
-	var linkText = document.createTextNode(name);
-	a.appendChild(linkText);
+// function getIdLink(id,name) {
+// 	var url_string = window.location.href
+// 	var url = new URL(url_string);
+// 	var noParams = window.location.href.split('?')[0];
+// 	var a = document.createElement('a');
+// 	var linkText = document.createTextNode(name);
+// 	a.appendChild(linkText);
 
-	// shitty "routing" state machine
-	if ( url.searchParams.get("id2")) {
-		if( url.searchParams.get("id1") === id || 
-				url.searchParams.get("id2") === id ) { 
-			a.href = noParams;
-		} else {
-			a.href = window.location.href.split('&')[0] + "&id2=" + id;
-		}
+// 	// shitty "routing" state machine
+// 	if ( url.searchParams.get("id2")) {
+// 		if( url.searchParams.get("id1") === id || 
+// 				url.searchParams.get("id2") === id ) { 
+// 			a.href = noParams;
+// 		} else {
+// 			a.href = window.location.href.split('&')[0] + "&id2=" + id;
+// 		}
 		
-	}
-	else if ( url.searchParams.get("id1")) {
-		if( url.searchParams.get("id1") === id) {
-			a.href = noParams;
-		} else {
-			a.href = window.location + "&id2=" + id;
-		}
-	}
-	else {
-		a.href = noParams + "?id1=" + id;
-	}
-	return a;
-}
+// 	}
+// 	else if ( url.searchParams.get("id1")) {
+// 		if( url.searchParams.get("id1") === id) {
+// 			a.href = noParams;
+// 		} else {
+// 			a.href = window.location + "&id2=" + id;
+// 		}
+// 	}
+// 	else {
+// 		a.href = noParams + "?id1=" + id;
+// 	}
+// 	return a;
+// }
