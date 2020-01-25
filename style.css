@@ -1,18 +1,29 @@
 .tableFixHead          { overflow-y: auto; height: 80%; }
 .tableFixHead thead th { position: sticky; top: 0; }
-th     { background:#eee; }
+#playersTable th     { background:#eee; }
 
-.ctable table  { border-collapse: collapse; width: 100%; }
-.ctable th, td { padding: 8px 16px; }
+/*.ctable table  { border-collapse: collapse; width: 100%; }
+.ctable th, td { padding: 8px 16px; }*/
 
+.ctable {
+	margin-top: 50px;
+}
 
 .active { background-color: #b3feb1; }
 .opponent { background-color: #fc9f7d; }
 
-#compareDiv {display: none;}
+/*#compareDiv {display: none;}*/
 
-thead {cursor: pointer;}
-tbody tr {cursor: pointer;}
+#playersTable thead {cursor: pointer;}
+#playersTable tbody tr {cursor: pointer;}
+
+#pickOrderTable tr {
+	border-bottom: 1px solid;
+}
+#pickOrderTable td {
+	border: 1px solid;
+	padding: 0 5px 0;
+}
 
 /*.rightleft tr td:first-child {
 	text-align:right;

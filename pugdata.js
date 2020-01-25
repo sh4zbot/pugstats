@@ -19,25 +19,35 @@ function addDateOnChangeListener(htmlId) {
 	document.getElementById(htmlId).addEventListener("change", function(e){
 		state[htmlId] = new Date(e.target.value).getTime();
 	})
-	console.log(state[htmlId]);
+	// console.log(state[htmlId]);
 }
 
 
 
 document.getElementById('datemin1').addEventListener("change", function(e){
 	state['datemin1'] = new Date(e.target.value).getTime();
-	var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
+	var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
+	var chartData = matchesToTimelineData(playerData.matches, state.id1);
+	pickOrderTable(playerData.picks);
 	addData(state.chart1, chartData);
 })
 
 document.getElementById("datemax1").addEventListener("change", function(e){
 	state.datemax1 = new Date(e.target.value).getTime();
-	// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.chart1), "chart1");
-	var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
-		addData(state.chart1, chartData);
+	var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
+	var chartData = matchesToTimelineData( playerData.matches, state.id1);
+	pickOrderTable(playerData.picks);
+	addData(state.chart1, chartData);
 })
+function ifnotthenmake() {
 
-function getPlayerMatches(data,playerid,mintime,maxtime) {
+}
+
+function getPlayerData(data,playerid,mintime,maxtime) {
+	var picks = [];
+	for(i=1;i<=12;i++){
+		picks.push({win: 0, loss: 0, tie: 0});
+	}
 	const res = data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
 		{ return false;}
@@ -45,13 +55,27 @@ function getPlayerMatches(data,playerid,mintime,maxtime) {
 			return;
 		}
 		const found = match.players.find(function(player){
-			// console.log(player.user.id)
-			// console.log(playerid)
-			return (player.user.id === parseInt(playerid));
+			if(player.user.id === parseInt(playerid)) {
+				if(player.captain != 1) {
+					if(player.pickOrder == null) {
+						//player was subbed out - do nothing
+					}
+					else if (match.winningTeam == player.team) {
+						picks[player.pickOrder-1].win++;
+					} else if (match.winningTeam != 0) {
+						picks[player.pickOrder-1].loss++;
+					} else if (match.winningTeam == 0) {
+						picks[player.pickOrder-1].tie++;
+					}	
+				}
+				return true;
+			}
+			// return (player.user.id === parseInt(playerid));
 		})
 		return found;
 	})
-	return res;
+	return {matches: res,
+					picks:   picks};
 }
 
 function matchesToTimelineData(matches, userid) {
@@ -179,17 +203,17 @@ function getCpm()
 
 function getCWR() {
 	state.playerArr.forEach( function(player){
-		var cwr = (player.cwin / player.closs) * 100;
+		var cwr = (player.cwin / player.closs) /// 2 * 100;
 		cwr = cwr.toString().substring(0,4);
-		player.cwr = cwr + "%";
+		player.cwr = cwr //+ "%";
 	})
 }
 
 
 
 if (state.id1 && state.id2) {	
-	document.getElementById("noCompareDiv").style.display = "none";
-	document.getElementById("compareDiv").style.display = "block";
+	// document.getElementById("noCompareDiv").style.display = "none";
+	// document.getElementById("compareDiv").style.display = "block";
 	displayComparison(state.cData);
 }
 
@@ -318,30 +342,28 @@ function onPlayerClick(id){
 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
 	displayIndexTable();
-	// console.log("getPlayerMatches")
-	// console.log( matchesToTimelineData( getPlayerMatches(data, state.id1),state.id1 ) );
-	// console.log(state.datemin1);
-	// console.log(state.datemax1);
 	if(state.id1){
 		removeData(state.chart1)
-		// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id1),state.id1 ), "chart1");
-		var chartData = matchesToTimelineData( getPlayerMatches(data, state.id1, state.datemin1, state.datemax1), state.id1);
+		// winLossChart( matchesToTimelineData( getPlayerData(data, state.id1),state.id1 ), "chart1");
+		var playerData = getPlayerData(data, state.id1, state.datemin1, state.datemax1)
+		pickOrderTable(playerData.picks);
+		var chartData = matchesToTimelineData(playerData.matches, state.id1);
 		addData(state.chart1, chartData);
 	}
 	if(state.id2){
 		removeData(state.chart1)
-		// winLossChart( matchesToTimelineData( getPlayerMatches(data, state.id2),state.id2), "chart2");
-		var chartData = matchesToTimelineData( getPlayerMatches(data, state.id2),state.id2);
+		var playerData = getPlayerData(data, state.id2);
+		var chartData = matchesToTimelineData( playerData.matches,state.id2);
 		addData(state.chart2, chartData);
-		console.log(state.chart2);
+		// console.log(state.chart2);
 	}
 	if (state.id1 && state.id2) {	
-		document.getElementById("noCompareDiv").style.display = "none";
-		document.getElementById("compareDiv").style.display = "block";
+		// document.getElementById("noCompareDiv").style.display = "none";
+		// document.getElementById("compareDiv").style.display = "block";
 		displayComparison(state.cData)
 	} else {
-		document.getElementById("noCompareDiv").style.display = "block";
-		document.getElementById("compareDiv").style.display = "none"; 
+		// document.getElementById("noCompareDiv").style.display = "block";
+		// document.getElementById("compareDiv").style.display = "none"; 
 	}
 
 }
@@ -391,6 +413,23 @@ function onTheadClick(key) {
 
 state.compFn = compMatches;
 displayIndexTable();
+
+function pickOrderTable(pickOrder) {
+	console.log(pickOrder);
+	var table = document.getElementById("pickOrderTable").getElementsByTagName('tbody')[0];
+	table.innerHTML = "";
+	pickOrder.forEach(function(po,i){
+		var tr = table.insertRow();
+		tr.insertCell().appendChild(document.createTextNode('#' + (i+1)  ));
+		tr.insertCell().appendChild(document.createTextNode(po.win));
+		tr.insertCell().appendChild(document.createTextNode(po.loss));
+		tr.insertCell().appendChild(document.createTextNode(po.tie));
+		tr.insertCell().appendChild(document.createTextNode(
+			(po.loss == 0) ? po.win.toString().substring(0,4) :
+			(po.win / po.loss ).toString().substring(0,4))
+		);	
+	})
+}
 
 function displayIndexTable() {
 	state.playerArr.sort(state.compFn);
