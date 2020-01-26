@@ -38,15 +38,30 @@ function main() {
 // re-render everything
 function render() {
 	init(state)
-	var playerData = getPlayerData(state.id1)
-	var chartData = matchesToTimelineData(playerData.matches, state.id1);
-	pickOrderTable(playerData.picks, "pickOrderTable1");
-	addData(state.chart1, chartData);
+	// we have multiple players selected for one team
+	if(Array.isArray(state.id1)){
+		var stats = getMultipleTogetherData(state.id1);
+		state.team1.wins = stats.wins;
+		state.team1.losses = stats.losses;
+		state.team1.ties = stats.ties;
+	}
+	else {
+		var playerData = getPlayerData(state.id1)
+		var chartData = matchesToTimelineData(playerData.matches, state.id1);
+		pickOrderTable(playerData.picks, "pickOrderTable1");
+		addData(state.chart1, chartData);
+	}
 
-	playerData = getPlayerData(state.id2)
-	chartData = matchesToTimelineData(playerData.matches, state.id2);
-	pickOrderTable(playerData.picks, "pickOrderTable2");
-	addData(state.chart2, chartData);
+	if(Array.isArray(state.id2)) {
+		var stats = getMultipleTogetherData(state.id2);
+	} else {
+		var playerData = getPlayerData(state.id2)
+		var chartData = matchesToTimelineData(playerData.matches, state.id2);
+		pickOrderTable(playerData.picks, "pickOrderTable2");
+		addData(state.chart2, chartData);
+	}
+
+
 	getCompareStats(state);
 	getCPM(); 
 	getCWR();
@@ -114,8 +129,61 @@ function init(state) {
 /*	
  *	Data 
  */
+ console.log(state);
+
+// Find matches where all of usrIds participated
+function getMultipleTogetherData(usrIds) {
+	const matches = state.data.filter(function(match) {
+		if (match.queue.id != 1548704432021)
+		{ return false;}
+		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
+		{ return false;}
+		return usrIds.every(function(usrId){
+			return match.players.find(function(player){
+				if(player.user.id === parseInt(usrId)) {
+					return true;
+				}
+			})
+		})
+	})
+
+	var win = 0, loss = 0, tie = 0;
+	var matchesTogether = matches.filter(function(match){
+		var team = null;
+		var sameTeam = usrIds.every(function(usrId){ 
+			var player = match.players.find(function(player){
+				return (player.user.id == usrId);
+			})
+			if (team == null) {
+				team = player.team;
+				return true;
+			} else {
+				if(player.team == team) {
+					if(match.winningTeam == team) {
+						win++;
+					} else if (match.winningTeam != 0) {
+						loss++; 
+					} else if (match.winningTeam == 0) {
+						tie++;
+					}
+					return true;
+				}
+				return player.team == team;
+			}
+		})
+		// console.log(sameTeam);
+		return sameTeam;
+	})
+	console.log("wins: " + win + "ties: " + tie + "loss: " + loss)
+	console.log("matchesTogether");
+	console.log(matchesTogether);
+	return { win: win, loss: loss, tie: tie}
+ }
+
+ console.log(getMultipleTogetherData([ "88450928457322500", "88439166618062850", "347125254050676740", "214799031677747200"]));
 
 function getPlayerData(playerid) {
+
 	var picks = [];
 	for(i=1;i<=12;i++){
 		picks.push({win: 0, loss: 0, tie: 0});
@@ -299,6 +367,18 @@ function addDateOnChangeListener(htmlId) {
 	})
 }
 
+function playerClick(id,name,team) {
+	if(team.players.length > 0 && team.players.find(player => player.id == id)) {
+		team.players = team.players.filter(player => player.id != id)
+	} else {
+		team.players.push({id: id, name: name});
+	}
+	return team;
+}
+
+console.log("ck");
+console.log(playerClick(1,"sh4z",{players: [{id: 1, name: "sh4z"},  {id: 2, name: "jp"}]}))
+
 function onPlayerClick(id){
 	if (state.id1 == null){
 		if(state.id2 == id){
@@ -430,7 +510,18 @@ function displayIndexTable() {
 			}
 			tr.appendChild(td);
 		})
-		tr.onclick = function() { onPlayerClick(player.id)}
+		// right-click
+		tr.addEventListener('contextmenu', function(ev) {
+	    ev.preventDefault();
+	    playerClick(player.id, player.name, state.team2)
+	    return false;
+		}, false);
+		// left-click
+		tr.onclick = function() { 
+			playerClick(player.id, player.name, state.team1)
+			// onPlayerClick(player.id, player.name)
+		}
+
 		tbody.appendChild(tr);
 	});
 	playersTable.appendChild(thead);
