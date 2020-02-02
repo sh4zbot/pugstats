@@ -69,20 +69,13 @@ function render() {
 		//clear pickordertables
 		pickOrderTable(null, "pickOrderTable1");
 		pickOrderTable(null, "pickOrderTable2");
-		console.log("stats");
-		console.log(stats);
+		
 		displayPlayer(state.teams[0], null, stats.win, stats.loss, "team1", stats.tie);
 		displayPlayer(state.teams[1], null, stats.loss, stats.win, "team2", stats.tie);
 		displayComparison(null)
 
 		document.getElementById("team1").setAttribute("class","col-12");
 		document.getElementById("team2").setAttribute("class","col-12");
-		// state.teams.map(function(team) {
-			
-		// 	console.log("stats");
-		// 	console.log(stats);
-		// })
-		
 	}
 
 	else {
@@ -94,15 +87,12 @@ function render() {
 		
 			var playerData = getPlayerData(state.teams[0].players[0].id)
 			var chartData = matchesToTimelineData(playerData.matches, id1);
-			console.log("playerData picks");
-			console.log(playerData.picks);
 			pickOrderTable(playerData.picks, "pickOrderTable1");
 			removeData(state.chart1);
 			addData(state.chart1, chartData);	
 		}
 		
 		if (id2) {
-			
 			document.getElementById("team2").setAttribute("class","col");
 			document.getElementById("chart2").style.display ="block";
 			playerData = getPlayerData(id2)
@@ -112,10 +102,6 @@ function render() {
 			addData(state.chart2, chartData);
 		}
 
-		
-		
-		console.log("cData");
-		console.log(state.cData);
 		displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
 		displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");
 
@@ -154,16 +140,6 @@ function init(state) {
 	state.player1 = {	htmlId: "p1" };
 	state.player2 = {	htmlId: "p2" };
 
-  // init player names
-	// state.playerArr.find((stored,i) => {
-	// 	if(stored.id == state.id1) {
-	// 		state.player1.name = stored.name;
-	// 	}
-	// 	if(stored.id == state.id2) {
-	// 		state.player2.name = stored.name;
-	// 	}
-	// });
-	
 	// combined data for both compared players
 	state.cData = {	matches: 				0,
 									bothWin: 				0,
@@ -174,8 +150,6 @@ function init(state) {
 									p1cwin: 0, p2cwin: 0,
 								};
 
-	
-	
 }
 
 
@@ -298,7 +272,7 @@ function matchesToTimelineData(matches, userid) {
 		if (player.captain == 0) {
 			pickCount++;
 			pickOrder.push(player.pickOrder);
-			pickData.push({t: match.timestamp, y: pickOrder.reduce((a, b) => a + b, pickOrder[0]) / pickCount});
+			pickData.push({t: match.timestamp, y: pickOrder.reduce((a, b) => a + b, 0) / pickCount});
 		}
 		if (match.winningTeam == 0) {
 			return;
