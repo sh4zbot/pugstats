@@ -26,16 +26,18 @@ state.teams = [{ name: "Diamond Sword",
 							 { name: "Blood Eagle",
 								 players: []}
 							];
-
+state.chart1 = createChart("chart1");
+state.chart2 = createChart("chart2");
 main();
 
-function moreThanOne(){
+function checkIfMultiplePlayers(){
+	var multiplePlayers = false;
 	state.teams.forEach(function(team){
-		if (team.players > 1) {
-			return true;
+		if (team.players.length > 1) {
+			multiplePlayers = true;
 		}
 	})
-	return false;
+	return multiplePlayers;
 }
 
 
@@ -43,7 +45,7 @@ function main() {
 	init(state);
 	addDateOnChangeListener('datemin');
 	addDateOnChangeListener('datemax');
-	getCompareStats(state);
+	getCompareStats();
 	getCPM();
 	getCWR();
 	state.compFn = compMatches;
@@ -55,38 +57,74 @@ function render() {
 	init(state)
 	// we have multiple players selected for one team
 	//TODO Here
-	if(moreThanOne()){
-		state.teams.map(function(team) {
-			var stats = getMultipleTogetherData(state.teams[0].players.map(p => p.id));
-		})
-		var stats = getMultipleTogetherData(state.teams[0].players.map(p => p.id));
-	}
-	else {
-		var playerData = getPlayerData(state.id1)
-		var chartData = matchesToTimelineData(playerData.matches, state.id1);
-		pickOrderTable(playerData.picks, "pickOrderTable1");
-		addData(state.chart1, chartData);
-	}
-
-	if(Array.isArray(state.id2)) {
-		var stats = getMultipleTogetherData(state.id2);
-	} else {
-		var playerData = getPlayerData(state.id2)
-		var chartData = matchesToTimelineData(playerData.matches, state.id2);
-		pickOrderTable(playerData.picks, "pickOrderTable2");
-		addData(state.chart2, chartData);
-	}
-
-
-	getCompareStats(state);
+	getCompareStats();
 	getCPM(); 
 	getCWR();
-	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
-	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
-	displayIndexTable();
-	if (state.id1 && state.id2) {	
-		displayComparison(state.cData)
+	if(checkIfMultiplePlayers()){
+		document.getElementById("chart1").style.display ="none";
+		document.getElementById("chart2").style.display ="none";
+		var usrIds = state.teams[0].players.map(p => p.id)
+		var oppIds = state.teams[1].players.map(p => p.id)
+		var stats = getMultipleTogetherData(usrIds,oppIds);
+		//clear pickordertables
+		pickOrderTable(null, "pickOrderTable1");
+		pickOrderTable(null, "pickOrderTable2");
+		console.log("stats");
+		console.log(stats);
+		displayPlayer(state.teams[0], null, stats.win, stats.loss, "team1", stats.tie);
+		displayPlayer(state.teams[1], null, stats.loss, stats.win, "team2", stats.tie);
+		displayComparison(null)
+
+		document.getElementById("team1").setAttribute("class","col-12");
+		document.getElementById("team2").setAttribute("class","col-12");
+		// state.teams.map(function(team) {
+			
+		// 	console.log("stats");
+		// 	console.log(stats);
+		// })
+		
 	}
+
+	else {
+		id1 = state.teams[0].players[0] ? state.teams[0].players[0].id : null;
+		id2 = state.teams[1].players[0] ? state.teams[1].players[0].id : null;
+		if (id1) {
+			document.getElementById("team1").setAttribute("class","col");
+			document.getElementById("chart1").style.display ="block";
+		
+			var playerData = getPlayerData(state.teams[0].players[0].id)
+			var chartData = matchesToTimelineData(playerData.matches, id1);
+			console.log("playerData picks");
+			console.log(playerData.picks);
+			pickOrderTable(playerData.picks, "pickOrderTable1");
+			removeData(state.chart1);
+			addData(state.chart1, chartData);	
+		}
+		
+		if (id2) {
+			
+			document.getElementById("team2").setAttribute("class","col");
+			document.getElementById("chart2").style.display ="block";
+			playerData = getPlayerData(id2)
+			chartData = matchesToTimelineData(playerData.matches, id2);
+			pickOrderTable(playerData.picks, "pickOrderTable2");
+			removeData(state.chart1);
+			addData(state.chart2, chartData);
+		}
+
+		
+		
+		console.log("cData");
+		console.log(state.cData);
+		displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
+		displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");
+
+		if (id1 && id2) {	
+			displayComparison(state.cData)
+		}
+	}
+	displayIndexTable();
+
 }
 
 function init(state) {
@@ -117,14 +155,14 @@ function init(state) {
 	state.player2 = {	htmlId: "p2" };
 
   // init player names
-	state.playerArr.find((stored,i) => {
-		if(stored.id == state.id1) {
-			state.player1.name = stored.name;
-		}
-		if(stored.id == state.id2) {
-			state.player2.name = stored.name;
-		}
-	});
+	// state.playerArr.find((stored,i) => {
+	// 	if(stored.id == state.id1) {
+	// 		state.player1.name = stored.name;
+	// 	}
+	// 	if(stored.id == state.id2) {
+	// 		state.player2.name = stored.name;
+	// 	}
+	// });
 	
 	// combined data for both compared players
 	state.cData = {	matches: 				0,
@@ -137,8 +175,7 @@ function init(state) {
 								};
 
 	
-	state.chart1 = createChart("chart1");
-	state.chart2 = createChart("chart2");
+	
 }
 
 
@@ -149,13 +186,14 @@ function init(state) {
  console.log(state);
 
 // Find matches where all of usrIds participated
-function getMultipleTogetherData(usrIds) {
+function getMultipleTogetherData(usrIds, oppIds) {
+	var bothIds = usrIds.concat(oppIds);
 	const matches = state.data.filter(function(match) {
 		if (match.queue.id != 1548704432021)
 		{ return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
 		{ return false;}
-		return usrIds.every(function(usrId){
+		return bothIds.every(function(usrId){
 			return match.players.find(function(player){
 				if(player.user.id === parseInt(usrId)) {
 					return true;
@@ -167,7 +205,7 @@ function getMultipleTogetherData(usrIds) {
 	var win = 0, loss = 0, tie = 0;
 	var matchesTogether = matches.filter(function(match){
 		var team = null;
-		var sameTeam = usrIds.every(function(usrId){ 
+		var correctTeams = usrIds.every(function(usrId){ 
 			var player = match.players.find(function(player){
 				return (player.user.id == usrId);
 			})
@@ -175,29 +213,33 @@ function getMultipleTogetherData(usrIds) {
 				team = player.team;
 				return true;
 			} else {
-				if(player.team == team) {
-					if(match.winningTeam == team) {
-						win++;
-					} else if (match.winningTeam != 0) {
-						loss++; 
-					} else if (match.winningTeam == 0) {
-						tie++;
+				
+				var corrOppTeam = oppIds.every(function(oppId){ 
+					var opponent = match.players.find(function(opponent){
+						return (opponent.user.id == oppId);
+					})
+					if (team == opponent.team) {
+						return false
+					} else {
+						return true
 					}
-					return true;
-				}
-				return player.team == team;
+				});
+				return player.team == team && corrOppTeam;
 			}
 		})
-		// console.log(sameTeam);
-		return sameTeam;
+		if(correctTeams) {
+			if(match.winningTeam == team) {
+				win++;
+			} else if (match.winningTeam != 0) {
+				loss++; 
+			} else if (match.winningTeam == 0) {
+				tie++;
+			}
+		}
+		return correctTeams;
 	})
-	console.log("wins: " + win + "ties: " + tie + "loss: " + loss)
-	console.log("matchesTogether");
-	console.log(matchesTogether);
 	return { win: win, loss: loss, tie: tie}
  }
-
- console.log(getMultipleTogetherData([ "88450928457322500", "88439166618062850", "347125254050676740", "214799031677747200"]));
 
 function getPlayerData(playerid) {
 
@@ -286,7 +328,12 @@ function matchesToTimelineData(matches, userid) {
 }
 
 
-function getCompareStats(state) {
+function getCompareStats(id1,id2) {
+	var id1 = null, id2 = null;
+	if (state.teams[0].players[0] && state.teams[1].players[0]) {
+		id1 = state.teams[0].players[0].id;
+		id2 = state.teams[1].players[0].id;
+	}
 	// Loop through every match/player and gather data
 	data.forEach(function(match){
 		// Only looking at stats for PUG queue
@@ -300,7 +347,7 @@ function getCompareStats(state) {
 
 		match.players.forEach(function(player){
 			
-			if(state.id1 && state.id2) { // if we are comparing two players
+			if(id1 && id2) { // if we are comparing two players
 				matchPlayerArr.push({	id: player.user.id,
 														 	name: player.user.name,
 														 	team: player.team,
@@ -325,14 +372,14 @@ function getCompareStats(state) {
 			})
 		});
 		
-		if(state.id1 && state.id2) {
+		if(id1 && id2) {
 			var found1 = false, found2 = false;
 			matchPlayerArr.forEach((player) => {
-				if (parseInt(player.id) === parseInt(state.id1)) {
+				if (parseInt(player.id) === parseInt(id1)) {
 					found1 = true;
 					fp1 = player;
 				}
-				if (parseInt(player.id) === parseInt(state.id2)) {
+				if (parseInt(player.id) === parseInt(id2)) {
 					found2 = true;
 					fp2 = player;
 				}
@@ -384,18 +431,18 @@ function addDateOnChangeListener(htmlId) {
 	})
 }
 
-function playerClick(id,name,team) {
-	if(team.players.length > 0 && team.players.find(player => player.id == id)) {
-		team.players = team.players.filter(player => player.id != id)
-	} else {
-		team.players.push({id: id, name: name});
-	}
-	console.log(team);
-	return team;
-}
 
-console.log("ck");
-console.log(playerClick(1,"sh4z",{players: [{id: 1, name: "sh4z"},  {id: 2, name: "jp"}]}))
+function playerClick(id,name,clicked,opposite) {
+	if(clicked.players.length > 0 && clicked.players.find(player => player.id == id)) {
+		clicked.players = clicked.players.filter(player => player.id != id)
+	} else {
+		clicked.players.push({id: id, name: name});
+	}
+
+	if(opposite.players.length > 0 && opposite.players.find(player => player.id == id)) {
+		opposite.players = opposite.players.filter(player => player.id != id)
+	}
+}
 
 function onPlayerClick(id){
 	if (state.id1 == null){
@@ -462,6 +509,9 @@ function onTheadClick(key) {
 function pickOrderTable(pickOrder,htmlId) {
 	var table = document.getElementById(htmlId);
 	table.innerHTML="";
+	if (pickOrder == null) {
+		return;
+	}
 	var thead = document.createElement("thead");
 	thead.setAttribute("class", "text-center");
 	var tr = thead.insertRow()
@@ -488,7 +538,15 @@ function pickOrderTable(pickOrder,htmlId) {
 
 }
 
+function getIds(team){
+	if(team.players && team.players.length > 0) {
+		return team.players.map(player => player.id);	
+	}
+	return null;
+}
+
 function displayIndexTable() {
+	var ids = state.teams.map(team => getIds(team));
 	state.playerArr.sort(state.compFn);
 	playersTable = document.getElementById("playersTable");
 	playersTable.innerHTML = "";
@@ -508,10 +566,10 @@ function displayIndexTable() {
 	var tbody = document.createElement('tbody');
 	state.playerArr.forEach( function( player) {
 		var tr = document.createElement('tr');
-		if ( state.id1 == player.id) {
+		if (ids[0] && ids[0].includes(player.id) ) {
 			tr.className += "active";
 		}
-		if (state.id2 == player.id) {
+		if (ids[1] && ids[1].includes(player.id) ) {
 			tr.className += "opponent";
 		}
 		Object.keys(player).forEach(function(key) {
@@ -531,12 +589,14 @@ function displayIndexTable() {
 		// right-click
 		tr.addEventListener('contextmenu', function(ev) {
 	    ev.preventDefault();
-	    playerClick(player.id, player.name, state.teams[1])
+	    playerClick(player.id, player.name, state.teams[1], state.teams[0])
+	    render();
 	    return false;
 		}, false);
 		// left-click
 		tr.onclick = function() { 
-			playerClick(player.id, player.name, state.teams[0])
+			playerClick(player.id, player.name, state.teams[0], state.teams[1])
+			render();
 			// onPlayerClick(player.id, player.name)
 		}
 
@@ -546,24 +606,59 @@ function displayIndexTable() {
 	playersTable.appendChild(tbody);
 }
 
-// View stuff
-function displayPlayer(name, cWins, wins, losses, htmlId) {
-	document.getElementById(htmlId + "Name")  
-		.innerHTML = name;
-	document.getElementById(htmlId + "cWins") 
-	  .innerHTML = "Capt vs Capt wins: "  + cWins;
-	document.getElementById(htmlId + "Wins")  
-		.innerHTML = "Wins: " 							+ wins;
-	document.getElementById(htmlId + "Losses")
-		.innerHTML = "Losses: " 						+ losses;
+
+// TODO: fix and make for multiple
+function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
+	var root = document.getElementById(htmlId);
+	root.innerHTML = "";
+	var nameDiv = document.createElement("h1")
+	nameDiv.innerHTML = team.players.map(player => player.name).join(", ");
+	root.appendChild(nameDiv);
+	root.appendChild(document.createElement("br"));
+
+	var cWinsDiv = document.createElement("span")
+	if(cWins == null) {
+		cWinsDiv.innerHTML = "";
+	} else {
+		cWinsDiv.innerHTML = "Capt vs Capt wins: "  + cWins;
+		root.appendChild(cWinsDiv);
+		root.appendChild(document.createElement("br"));
+	}
+	
+	var winsDiv = document.createElement("span")
+	winsDiv.innerHTML = "Wins: " 							+ wins;
+	root.appendChild(winsDiv);
+	root.appendChild(document.createElement("br"));
+
+	var lossesDiv = document.createElement("span")
+	lossesDiv.innerHTML = "Losses: " 						+ losses;
+	root.appendChild(lossesDiv);
+	root.appendChild(document.createElement("br"));
+
+	var tiesDiv = document.createElement("span")
+	if(ties) {
+		tiesDiv.innerHTML = "Ties: " 						+ ties;	
+		root.appendChild(tiesDiv);
+	}
 }
 
 function displayComparison(cData) {
-	document.getElementById("matches").innerHTML 			= cData.matches;
-	document.getElementById("bothWin").innerHTML 			= cData.bothWin;
-	document.getElementById("bothLose").innerHTML 		= cData.bothLose;
-	document.getElementById("bothCaptain").innerHTML 	= cData.bothCaptain;
-	document.getElementById("ties").innerHTML 				= cData.ties;
+	if(cData == null) {
+		document.getElementById('ctable').style.display = "none";
+		document.getElementById("matches").innerHTML 			= "n/a";
+		document.getElementById("bothWin").innerHTML 			= "n/a"
+		document.getElementById("bothLose").innerHTML 		= "n/a"
+		document.getElementById("bothCaptain").innerHTML 	= "n/a"
+		document.getElementById("ties").innerHTML 				= "n/a"
+	}
+	else {
+		document.getElementById('ctable').style.display = "block";
+		document.getElementById("matches").innerHTML 			= cData.matches;
+		document.getElementById("bothWin").innerHTML 			= cData.bothWin;
+		document.getElementById("bothLose").innerHTML 		= cData.bothLose;
+		document.getElementById("bothCaptain").innerHTML 	= cData.bothCaptain;
+		document.getElementById("ties").innerHTML 				= cData.ties;
+	}
 }
 
 function createChart(htmlId) {
@@ -596,7 +691,6 @@ function getCPM()
 {	state.playerArr.forEach( function(player){
 		if( player.matches == 0) {
 			player.cpm = "0%";
-			console.log("matcehs == 0")
 		} else {
 			var cpm = (player.captained / player.matches) * 100;
 			cpm = cpm.toString().substring(0,4);
@@ -612,9 +706,9 @@ function getCWR() {
 			player.cwr = player.cwin;
 		}
 		else {
-			var cwr = (player.cwin / player.closs) /// 2 * 100;
+			var cwr = (player.cwin / (player.closs + player.cwin) ) * 100
 			cwr = cwr.toString().substring(0,4);
-			player.cwr = cwr //+ "%";
+			player.cwr = cwr + "%";
 		}
 		
 	})
