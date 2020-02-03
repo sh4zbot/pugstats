@@ -4,8 +4,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 // Uncomment to handl URL id parameters
 
-// var url_string = window.location.href
-// var url = new URL(url_string);
+
+
+
+
+
 // state.id1 = url.searchParams.get("id1");
 // state.id2 = url.searchParams.get("id2");
 // var compareTwo = state.id1 ? state.id2 ? true : false : false;
@@ -47,16 +50,14 @@ function checkIfMultiplePlayers(){
 	return multiplePlayers;
 }
 
-
 function main() {
 	init(state);
+	state.compFn = compMatches;
+	getUrlTeams();
 	addDateOnChangeListener('datemin');
 	addDateOnChangeListener('datemax');
-	getCompareStats();
-	getCPM();
-	getCWR();
-	state.compFn = compMatches;
-	displayIndexTable();
+	render();
+	// displayIndexTable();
 }
 
 // re-render everything
@@ -416,17 +417,22 @@ function addDateOnChangeListener(htmlId) {
 	})
 }
 
+function addPlayer(id,name,team) {
+	team.players.push({id: id, name: name});
+}
+
 
 function playerClick(id,name,clicked,opposite) {
 	if(clicked.players.length > 0 && clicked.players.find(player => player.id == id)) {
 		clicked.players = clicked.players.filter(player => player.id != id)
 	} else {
-		clicked.players.push({id: id, name: name});
+		addPlayer(id,name,clicked);
 	}
 
 	if(opposite.players.length > 0 && opposite.players.find(player => player.id == id)) {
 		opposite.players = opposite.players.filter(player => player.id != id)
 	}
+	console.log( teamsToUrl() );
 }
 
 function onPlayerClick(id){
@@ -771,50 +777,70 @@ function removeData(chart) {
     chart.update();
 }
 
+
+// URL stuff
+function getUrlTeams() {
+	var url_string = window.location.href
+	var url = new URL(url_string);
+	var teams = [url.searchParams.get("team1"), url.searchParams.get("team2")];
+	teams.forEach(function(team,i){
+		if(team) {
+			ids = team.split(',');
+			ids.forEach(function(id){
+				addPlayer(id, state.players[id], state.teams[i]);
+			})
+		}
+	})
+	console.log(teams);
+}
+
+function teamsToUrl(){
+	var url_string = window.location.href;
+	var urlTeams = [];
+	state.teams.forEach(function(team,i){
+		urlTeams.push(team.players.map(player => player.id).join(",") );
+	})
+	
+	return location.protocol + '//' + location.host + location.pathname 
+					+ "?team1=" + urlTeams[0] + "&team2=" + urlTeams[1];
+}
+
+function fallbackCopyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position="fixed";  //avoid scrolling to bottom
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
+}
+
+var copyUrlBtn = document.querySelector('.copy-url-btn')
+
+copyUrlBtn.addEventListener('click', function(event) {
+  copyTextToClipboard(teamsToUrl());
 });
 
+});
 
-
-
-
-
-
-
-
-
-
-
-
-
-// relic code; url parameter navigation
-
-// function getIdLink(id,name) {
-// 	var url_string = window.location.href
-// 	var url = new URL(url_string);
-// 	var noParams = window.location.href.split('?')[0];
-// 	var a = document.createElement('a');
-// 	var linkText = document.createTextNode(name);
-// 	a.appendChild(linkText);
-
-// 	// shitty "routing" state machine
-// 	if ( url.searchParams.get("id2")) {
-// 		if( url.searchParams.get("id1") === id || 
-// 				url.searchParams.get("id2") === id ) { 
-// 			a.href = noParams;
-// 		} else {
-// 			a.href = window.location.href.split('&')[0] + "&id2=" + id;
-// 		}
-		
-// 	}
-// 	else if ( url.searchParams.get("id1")) {
-// 		if( url.searchParams.get("id1") === id) {
-// 			a.href = noParams;
-// 		} else {
-// 			a.href = window.location + "&id2=" + id;
-// 		}
-// 	}
-// 	else {
-// 		a.href = noParams + "?id1=" + id;
-// 	}
-// 	return a;
-// }
