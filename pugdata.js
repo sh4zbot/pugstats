@@ -197,21 +197,18 @@ function getMultipleTogetherData(usrIds, oppIds) {
 			})
 			if (team == null) {
 				team = player.team;
-				return true;
-			} else {
-				
-				var corrOppTeam = oppIds.every(function(oppId){ 
-					var opponent = match.players.find(function(opponent){
-						return (opponent.user.id == oppId);
-					})
-					if (team == opponent.team) {
-						return false
-					} else {
-						return true
-					}
-				});
-				return player.team == team && corrOppTeam;
-			}
+			} 
+			var corrOppTeam = oppIds.every(function(oppId){ 
+				var opponent = match.players.find(function(opponent){
+					return (opponent.user.id == oppId);
+				})
+				if (team == opponent.team) {
+					return false
+				} else {
+					return true
+				}
+			});
+			return player.team == team && corrOppTeam;
 		})
 		if(correctTeams) {
 			if(match.winningTeam == team) {
