@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
 // if(state.id2) {
 // 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
 // }
+
+
+const TA_Q = 1548704432021;
+const MA_Q = 1558789281392;
+const MAIN_QUEUES = [TA_Q, MA_Q];
+
+
 team = {players: []}
 state.teams = [{ name: "Diamond Sword",
 								 players: []},
@@ -61,6 +68,8 @@ function render() {
 	getCPM(); 
 	getCWR();
 	if(checkIfMultiplePlayers()){
+		// document.getElementById("midh1").innerHTML ="VS";
+		// document.getElementById("middiv").style.display ="none";
 		document.getElementById("chart1").style.display ="none";
 		document.getElementById("chart2").style.display ="none";
 		var usrIds = state.teams[0].players.map(p => p.id)
@@ -79,6 +88,8 @@ function render() {
 	}
 
 	else {
+		// document.getElementById("midh1").innerHTML ="";
+		// document.getElementById("middiv").style.display ="block";
 		id1 = state.teams[0].players[0] ? state.teams[0].players[0].id : null;
 		id2 = state.teams[1].players[0] ? state.teams[1].players[0].id : null;
 		if (id1) {
@@ -163,7 +174,7 @@ function init(state) {
 function getMultipleTogetherData(usrIds, oppIds) {
 	var bothIds = usrIds.concat(oppIds);
 	const matches = state.data.filter(function(match) {
-		if (match.queue.id != 1548704432021)
+		if (!MAIN_QUEUES.includes(match.queue.id))
 		{ return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
 		{ return false;}
@@ -222,7 +233,7 @@ function getPlayerData(playerid) {
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
 	const res = state.data.filter(function(match) {
-		if (match.queue.id != 1548704432021)
+		if (!MAIN_QUEUES.includes(match.queue.id))
 		{ return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
