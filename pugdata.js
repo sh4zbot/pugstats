@@ -320,7 +320,7 @@ function getCompareStats(id1,id2) {
 	// Loop through every match/player and gather data
 	data.forEach(function(match){
 		// Only looking at stats for PUG queue
-	 	if (match.queue.id != 1548704432021) {
+	 	if (!MAIN_QUEUES.includes(match.queue.id)) {
 	 		return;
 	 	}
 	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
