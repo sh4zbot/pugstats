@@ -1,4 +1,4 @@
-const servers = ["mace", "dae", "ta"];
+const servers = ["mace", "dae", "ta", "bittah"];
 
 var state = {data: {}}; 
 servers.forEach(server => 
@@ -255,8 +255,8 @@ function getPlayerData(playerid) {
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
 	const res = getData().filter(function(match) {
-		if (!MAIN_QUEUES.includes(match.queue.id))
-		{ return false;}
+		// if (!MAIN_QUEUES.includes(match.queue.id))
+		// { return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
 		}
