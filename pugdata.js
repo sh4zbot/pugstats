@@ -1,5 +1,10 @@
-var state = {data: data}; 
+const servers = ["mace", "dae", "ta"];
 
+var state = {data: {}}; 
+servers.forEach(server => 
+	state.data[server] = window["data" + server]
+	// console.log(window["data" + server])
+	)
 document.addEventListener('DOMContentLoaded', (event) => {
 
 // Uncomment to handl URL id parameters
@@ -36,9 +41,21 @@ state.teams = [{ name: "Diamond Sword",
 							 { name: "Blood Eagle",
 								 players: []}
 							];
-state.chart1 = createChart("chart1");
-state.chart2 = createChart("chart2");
+state.selectedS = [ "mace" ];
+state.selectedQ = [];
+state.queues = [];							
+
+
 main();
+
+function getQueues() {
+
+}
+
+function getData() {
+	// console.log("getData",state.data[state.selectedS[0]]);
+	return state.currentData;
+}
 
 function checkIfMultiplePlayers(){
 	var multiplePlayers = false;
@@ -60,6 +77,41 @@ function main() {
 	// displayIndexTable();
 }
 
+function init(state) {
+	state.playerArr = [];
+	state.players = {};
+	setCurrentData()
+	
+	// state.selectedQ.push(Object.keys(state.queues)[0]);
+
+	Object.keys(state.players).forEach(function(key) {
+		state.playerArr.push({ id: key, 
+													 name: state.players[key], 
+													 matches: 0, 
+													 captained: 0,
+													 win: 0,
+									 				 loss: 0,
+									 				 cwin: 0,
+									 				 closs: 0,
+									});
+	});
+
+	state.player1 = {	htmlId: "p1" };
+	state.player2 = {	htmlId: "p2" };
+
+	// combined data for both compared players
+	state.cData = {	matches: 				0,
+									bothWin: 				0,
+									bothLose: 			0,
+									bothCaptain: 		0,
+									ties: 					0,
+									p1win: 0, p2win: 0,
+									p1cwin: 0, p2cwin: 0,
+								};
+	state.chart1 = createChart("chart1");
+	state.chart2 = createChart("chart2");
+}
+
 // re-render everything
 function render() {
 	init(state)
@@ -68,6 +120,7 @@ function render() {
 	getCompareStats();
 	getCPM(); 
 	getCWR();
+	updateNavbarBtns();
 	if(checkIfMultiplePlayers()){
 		// document.getElementById("midh1").innerHTML ="VS";
 		// document.getElementById("middiv").style.display ="none";
@@ -125,58 +178,29 @@ function render() {
 
 }
 
-function init(state) {
-	state.playerArr = [];
-	state.players = {};
-
-
-	data.forEach(function(match){
-		match.players.forEach(function(player){
-			state.players[player.user.id] = player.user.name;
-		})
+function updateNavbarBtns() {
+	$('button', '.btn-container').removeClass("btn-primary").addClass("btn-secondary")
+	state.selectedS.forEach(function(e){
+		$('#' + e).addClass("btn-primary").removeClass("btn-secondary");
 	})
-
-	Object.keys(state.players).forEach(function(key) {
-		state.playerArr.push({ id: key, 
-													 name: state.players[key], 
-													 matches: 0, 
-													 captained: 0,
-													 win: 0,
-									 				 loss: 0,
-									 				 cwin: 0,
-									 				 closs: 0,
-									});
-	
-	});
-
-	state.player1 = {	htmlId: "p1" };
-	state.player2 = {	htmlId: "p2" };
-
-	// combined data for both compared players
-	state.cData = {	matches: 				0,
-									bothWin: 				0,
-									bothLose: 			0,
-									bothCaptain: 		0,
-									ties: 					0,
-									p1win: 0, p2win: 0,
-									p1cwin: 0, p2cwin: 0,
-								};
-
+	state.selectedQ.forEach(function(e){
+		$('#' + e).addClass("btn-primary").removeClass("btn-secondary");
+	})
 }
+
 
 
 
 /*	
  *	Data 
  */
- console.log(state);
 
 // Find matches where all of usrIds participated
 function getMultipleTogetherData(usrIds, oppIds) {
 	var bothIds = usrIds.concat(oppIds);
-	const matches = state.data.filter(function(match) {
-		if (!MAIN_QUEUES.includes(match.queue.id))
-		{ return false;}
+	const matches = getData().filter(function(match) {
+		// if (!MAIN_QUEUES.includes(match.queue.id))
+		// { return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
 		{ return false;}
 		return bothIds.every(function(usrId){
@@ -230,7 +254,7 @@ function getPlayerData(playerid) {
 	for(i=1;i<=12;i++){
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
-	const res = state.data.filter(function(match) {
+	const res = getData().filter(function(match) {
 		if (!MAIN_QUEUES.includes(match.queue.id))
 		{ return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
@@ -318,11 +342,11 @@ function getCompareStats(id1,id2) {
 		id2 = state.teams[1].players[0].id;
 	}
 	// Loop through every match/player and gather data
-	data.forEach(function(match){
+	getData().forEach(function(match){
 		// Only looking at stats for PUG queue
-	 	if (!MAIN_QUEUES.includes(match.queue.id)) {
-	 		return;
-	 	}
+	 // 	if (!MAIN_QUEUES.includes(match.queue.id)) {
+	 // 		return;
+	 // 	}
 	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
 		}
@@ -429,7 +453,6 @@ function playerClick(id,name,clicked,opposite) {
 	if(opposite.players.length > 0 && opposite.players.find(player => player.id == id)) {
 		opposite.players = opposite.players.filter(player => player.id != id)
 	}
-	console.log( teamsToUrl() );
 }
 
 function onPlayerClick(id){
@@ -531,6 +554,68 @@ function getIds(team){
 		return team.players.map(player => player.id);	
 	}
 	return null;
+}
+
+function button(btnClass, text) {
+	return $('<button type="button" id="' + text + '" class="btn ' + btnClass + ' btn-sm"> ' + text + '</button>');
+}
+
+populateServerButtons();
+
+function setCurrentData() {
+	var data = []
+	state.selectedS.forEach(function(server){
+		data = data.concat(state.data[server])
+	})
+	state.currentData = data;
+	getData().forEach(function(match){
+		// get all player names
+		match.players.forEach(function(player){
+			state.players[player.user.id] = player.user.name;
+		})
+		// get all queue names
+		state.queues[match.queue.name] = match.queue.id;
+	})
+}
+
+function clickToArr(clicked, arrName) {
+	if(state[arrName].indexOf(clicked) === -1) {
+		state[arrName].push(clicked)
+	} else {
+		state[arrName] = state[arrName].filter(s => s !== clicked)
+	}
+	setCurrentData()
+	// populateQueues()
+}
+
+function populateServerButtons() {
+	var primary = '<button type="button" class="btn btn-primary btn-sm">Large button</button>'
+	servers.forEach( function(server, i){
+		var btnClass = i == 0 ? "btn-primary" : "btn-secondary";
+		var btn = button(btnClass, server);
+		btn.click(function () {
+			// $('button', '#servers').removeClass("btn-primary").addClass("btn-secondary")
+			// $(this).removeClass("btn-secondary")
+			// $(this).addClass("btn-primary")
+			clickToArr(server, "selectedS")
+			render();
+		})
+		$('#servers').append(btn);
+	})
+}
+
+function populateQueues() {
+	Object.keys(state.queues).forEach(function (queue, i) {
+		var btnClass = i == 0 ? "btn-primary" : "btn-secondary";
+		var btn = button(btnClass, queue);
+		btn.click(function () {
+			
+			// state.queue = queue;
+			clickToArr(queue, "selectedQ");
+			render();
+		})
+		$('#queues').append(btn);
+	})
 }
 
 function displayIndexTable() {
@@ -653,7 +738,7 @@ function createChart(htmlId) {
 	var ctx = document.getElementById(htmlId).getContext('2d');
 	return new Chart(ctx, {
 	    type: 'line',
-	    data: data,
+	    data: getData(),
 	    options: {
         scales: {
         		yAxes: [{ 

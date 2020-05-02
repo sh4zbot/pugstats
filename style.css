@@ -4,7 +4,8 @@
 
 /*.ctable table  { border-collapse: collapse; width: 100%; }
 .ctable th, td { padding: 8px 16px; }*/
-
+.row.main{ 
+margin-top: 50px; }
 .ctable {
 	margin-top: 50px;
 }
@@ -25,6 +26,13 @@
 	padding: 0 5px 0;
 }
 
+.queues {
+	margin-left: 30px;
+}
+
+.servers button, .queues button{
+	margin: 0 3px 0 3px;
+}
 /*.rightleft tr td:first-child {
 	text-align:right;
 }
