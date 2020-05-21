@@ -119,7 +119,8 @@ function render() {
 	//TODO Here
 	getCompareStats();
 	getCPM(); 
-	getCWR();
+	getWR( false);
+	getWR( true);
 	updateNavbarBtns();
 	if(checkIfMultiplePlayers()){
 		// document.getElementById("midh1").innerHTML ="VS";
@@ -505,6 +506,10 @@ function onTheadClick(key) {
   	state.compFn = compCWR;
     displayIndexTable();
     break;
+  case "wr":
+  	state.compFn = compWR;
+    displayIndexTable();
+    break;
   case "cwin":
   	state.compFn = compcwin;
     displayIndexTable();
@@ -773,15 +778,20 @@ function getCPM()
 	})
 }
 
-function getCWR() {
+function getWR( captain) {
 	state.playerArr.forEach( function(player){
-		if( player.closs == 0) {
-			player.cwr = player.cwin;
+		var wr;
+		var winKey  = captain ? "cwin"  : "win";
+		var lossKey = captain ? "closs" : "loss";
+		var wrKey   = captain ? "cwr"   : "wr";
+
+		if( player[lossKey] == 0) {
+			player[wrKey] = player[winKey];
 		}
 		else {
-			var cwr = (player.cwin / (player.closs + player.cwin) ) * 100
-			cwr = cwr.toString().substring(0,4);
-			player.cwr = cwr + "%";
+			var wr = (player[winKey] / (player[lossKey] + player[winKey]) ) * 100
+			wr = wr.toString().substring(0,4);
+			player[wrKey] = wr + "%";
 		}
 		
 	})
@@ -835,6 +845,10 @@ function compCWR(a,b) {
 	return parseFloat( b.cwr ) - parseFloat( a.cwr );
 }
 
+function compWR(a,b) {
+	return parseFloat( b.wr ) - parseFloat( a.wr );
+}
+
 function compcwin(a,b) {
 	return b.cwin- a.cwin;
 }
@@ -842,8 +856,6 @@ function compcwin(a,b) {
 function compcloss(a,b) {
 	return b.closs- a.closs;
 }
-
-
 
 
 function addData(chart, data) {
