@@ -3,32 +3,8 @@ const servers = ["mace", "dae", "ta", "bittah"];
 var state = {data: {}}; 
 servers.forEach(server => 
 	state.data[server] = window["data" + server]
-	// console.log(window["data" + server])
 	)
 document.addEventListener('DOMContentLoaded', (event) => {
-
-// Uncomment to handl URL id parameters
-
-
-
-
-
-
-// state.id1 = url.searchParams.get("id1");
-// state.id2 = url.searchParams.get("id2");
-// var compareTwo = state.id1 ? state.id2 ? true : false : false;
-
-// if (state.id1 && state.id2) {	
-// 	displayComparison(state.cData);
-// }
-
-// if(state.id1) {
-// 	displayPlayer(state.player1.name, state.cData.p1cwin, state.cData.p1win, state.cData.p2win, state.player1.htmlId);
-// }
-// if(state.id2) {
-// 	displayPlayer(state.player2.name, state.cData.p2cwin, state.cData.p2win, state.cData.p1win, state.player2.htmlId);
-// }
-
 
 const TA_Q = 1548704432021;
 const MA_Q = 1558789281392;
@@ -42,15 +18,24 @@ state.teams = [{ name: "Diamond Sword",
 								 players: []}
 							];
 state.selectedS = [ "mace" ];
-state.selectedQ = [];
-state.queues = [];							
+state.selectedQ = ["1585645131434", "1585645136862", "1585645126218"];
+state.queues = {};
 
+// get all queue names, id's and matches played in that queue
+matchcount = {};
+Object.entries(state.data).forEach(([server, matches]) => {
+	state.queues[server] = [];
+	
+	matches.forEach(function (match){
+		matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
+		state.queues[server][match.queue.id] = match.queue.name;
+	})
+	
+})
+state.matchcount = matchcount;
+	console.log("matchcount", state.matchcount);
 
 main();
-
-function getQueues() {
-
-}
 
 function getData() {
 	// console.log("getData",state.data[state.selectedS[0]]);
@@ -69,45 +54,49 @@ function checkIfMultiplePlayers(){
 
 function main() {
 	init(state);
+	console.log(state.data);
 	state.compFn = compMatches;
 	getUrlTeams();
 	addDateOnChangeListener('datemin');
 	addDateOnChangeListener('datemax');
 	render();
 	// displayIndexTable();
+
 }
 
 function init(state) {
 	state.playerArr = [];
 	state.players = {};
+
 	setCurrentData()
 	
 	// state.selectedQ.push(Object.keys(state.queues)[0]);
 
 	Object.keys(state.players).forEach(function(key) {
-		state.playerArr.push({ id: key, 
-													 name: state.players[key], 
-													 matches: 0, 
-													 captained: 0,
-													 win: 0,
-									 				 loss: 0,
-									 				 cwin: 0,
-									 				 closs: 0,
-									});
+		state.playerArr.push({ 	id: 		key, 
+							 	name: 		state.players[key], 
+								matches: 	0, 
+							 	captained: 	0,
+							 	win: 		0,
+			 				 	loss: 		0,
+			 					cwin: 		0,
+			 				 	closs: 		0,
+								});
 	});
+
 
 	state.player1 = {	htmlId: "p1" };
 	state.player2 = {	htmlId: "p2" };
 
 	// combined data for both compared players
 	state.cData = {	matches: 				0,
-									bothWin: 				0,
-									bothLose: 			0,
-									bothCaptain: 		0,
-									ties: 					0,
-									p1win: 0, p2win: 0,
-									p1cwin: 0, p2cwin: 0,
-								};
+					bothWin: 				0,
+					bothLose: 			0,
+					bothCaptain: 		0,
+					ties: 					0,
+					p1win: 0, p2win: 0,
+					p1cwin: 0, p2cwin: 0,
+				};
 	state.chart1 = createChart("chart1");
 	state.chart2 = createChart("chart2");
 }
@@ -152,6 +141,7 @@ function render() {
 			document.getElementById("chart1").style.display ="block";
 		
 			var playerData = getPlayerData(state.teams[0].players[0].id)
+			console.log(playerData);
 			var chartData = matchesToTimelineData(playerData.matches, id1);
 			pickOrderTable(playerData.picks, "pickOrderTable1");
 			removeData(state.chart1);
@@ -176,7 +166,6 @@ function render() {
 		}
 	}
 	displayIndexTable();
-
 }
 
 function updateNavbarBtns() {
@@ -200,10 +189,12 @@ function updateNavbarBtns() {
 function getMultipleTogetherData(usrIds, oppIds) {
 	var bothIds = usrIds.concat(oppIds);
 	const matches = getData().filter(function(match) {
-		// if (!MAIN_QUEUES.includes(match.queue.id))
-		// { return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
 		{ return false;}
+		//TODO:
+		// if (! state.selectedQ.includes(match.queue.id)){
+		// 	return false;
+		// }
 		return bothIds.every(function(usrId){
 			return match.players.find(function(player){
 				if(player.user.id === parseInt(usrId)) {
@@ -252,29 +243,34 @@ function getMultipleTogetherData(usrIds, oppIds) {
 function getPlayerData(playerid) {
 
 	var picks = [];
-	for(i=1;i<=12;i++){
+	for(i=1;i<=13;i++){
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
 	const res = getData().filter(function(match) {
-		// if (!MAIN_QUEUES.includes(match.queue.id))
-		// { return false;}
 		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
 		}
+
+		//TODO
+		// console.log(match.queue.id);
+		// if (! state.selectedQ.includes(match.queue.id)){
+		// 	return;
+		// }
 		const found = match.players.find(function(player){
 			if(player.user.id === parseInt(playerid)) {
-				if(player.captain != 1) {
+				// dont include captain
+				// if(player.captain != 1) {
 					if(player.pickOrder == null) {
 						//player was subbed out - do nothing
 					}
 					else if (match.winningTeam == player.team) {
-						picks[player.pickOrder-1].win++;
+						picks[player.pickOrder].win++;
 					} else if (match.winningTeam != 0) {
-						picks[player.pickOrder-1].loss++;
+						picks[player.pickOrder].loss++;
 					} else if (match.winningTeam == 0) {
-						picks[player.pickOrder-1].tie++;
+						picks[player.pickOrder].tie++;
 					}	
-				}
+				// } 
 				return true;
 			}
 			// return (player.user.id === parseInt(playerid));
@@ -282,7 +278,7 @@ function getPlayerData(playerid) {
 		return found;
 	})
 	return {matches: res,
-					picks:   picks};
+			picks:   picks};
 }
 
 function matchesToTimelineData(matches, userid) {
@@ -351,6 +347,11 @@ function getCompareStats(id1,id2) {
 	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
 			return;
 		}
+		
+		if (! state.selectedQ.includes(match.queue.id.toString())){
+			return false;
+		}
+
 		var matchPlayerArr = [];
 
 		match.players.forEach(function(player){
@@ -367,14 +368,14 @@ function getCompareStats(id1,id2) {
 			state.playerArr.find((stored,i) => {
 				if(stored.id == player.user.id) {
 						state.playerArr[i] = {  id: 				stored.id, 
-																		name: 			stored.name, 
-																		matches: 		stored.matches + 1, 
-																		captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
-																		win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
-																		loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
-																		cwin: (player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
-																		closs: (match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
-														}
+												name: 			stored.name, 
+												matches: 		stored.matches + 1, 
+												captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
+												win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
+												loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
+												cwin: (player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
+												closs: (match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
+									}
 				return true; // return true == .find() is done			
 				}
 			})
@@ -541,7 +542,8 @@ function pickOrderTable(pickOrder,htmlId) {
 	var tbody = document.createElement("tbody");
 	pickOrder.forEach(function(po,i){
 		var tr = tbody.insertRow();
-		tr.insertCell().appendChild(document.createTextNode('#' + (i+1)  ));
+
+		tr.insertCell().appendChild(document.createTextNode( i == 0 ? "cpt" : ('#' + i)  ));
 		tr.insertCell().appendChild(document.createTextNode(po.win));
 		tr.insertCell().appendChild(document.createTextNode(po.loss));
 		tr.insertCell().appendChild(document.createTextNode(po.tie));
@@ -561,15 +563,15 @@ function getIds(team){
 	return null;
 }
 
-function button(btnClass, text) {
-	return $('<button type="button" id="' + text + '" class="btn ' + btnClass + ' btn-sm"> ' + text + '</button>');
+function button(btnClass, text, id) {
+	return $('<button type="button" id="' + (id ? id : text) + '" class="btn ' + btnClass + ' btn-sm"> ' + text + '</button>');
 }
 
 populateServerButtons();
 
 function setCurrentData() {
 	var data = []
-	state.selectedS.forEach(function(server){
+	servers.forEach(function(server){
 		data = data.concat(state.data[server])
 	})
 	state.currentData = data;
@@ -578,8 +580,9 @@ function setCurrentData() {
 		match.players.forEach(function(player){
 			state.players[player.user.id] = player.user.name;
 		})
-		// get all queue names
-		state.queues[match.queue.name] = match.queue.id;
+
+		
+		
 	})
 }
 
@@ -594,20 +597,55 @@ function clickToArr(clicked, arrName) {
 }
 
 function populateServerButtons() {
-	var primary = '<button type="button" class="btn btn-primary btn-sm">Large button</button>'
 	servers.forEach( function(server, i){
 		var btnClass = i == 0 ? "btn-primary" : "btn-secondary";
-		var btn = button(btnClass, server);
+		var btn = $('<span class="">' + server + '</span>')
+		//button("btn-success", server);
 		btn.click(function () {
 			// $('button', '#servers').removeClass("btn-primary").addClass("btn-secondary")
 			// $(this).removeClass("btn-secondary")
 			// $(this).addClass("btn-primary")
-			clickToArr(server, "selectedS")
-			render();
+			// clickToArr(server, "selectedS")
+			// render();
 		})
-		$('#servers').append(btn);
+		var col = $('<div class="col"></div>');
+		var row1 = $('<div class="row d-flex justify-content-center"></div>');
+		row1.append(btn);
+		var row2 = $('<div class="row d-flex justify-content-center queues"></div>');
+		
+		var queues = state.queues[server];
+		for (var key in queues) {
+			var qBtn = null;
+			if (state.matchcount[key] > 20) {
+				qBtn = button(btnClass, queues[key], key);
+				qBtn.click(function() {
+					state.selectedQ.indexOf($(this).attr('id')) === -1 ? state.selectedQ.push($(this).attr('id')) : 
+														  				 state.selectedQ.splice( state.selectedQ.indexOf($(this).attr('id')), 1 );
+					console.log(state.selectedQ)
+					render();
+					
+				})
+				row2.append(qBtn);
+			}
+		
+		}
+		$('#servers').append(col);
+		$('#servers > div:last-child').append(col).append(row1).append(row2);
 	})
 }
+
+// <div class="col">
+// 	<div class="row d-flex justify-content-center">
+// 		<button type="button" id="mace" class="btn btn-sm btn-primary"> mace</button>
+// 	</div>
+// 	<div class="row">
+// 		<button type="button" id="mace" class="btn btn-sm btn-primary"> queu1</button>
+// 		<button type="button" id="mace" class="btn btn-sm btn-primary"> queu2</button>
+// 		<button type="button" id="mace" class="btn btn-sm btn-primary"> queu3</button>
+// 	</div>
+// </div>
+
+
 
 function populateQueues() {
 	Object.keys(state.queues).forEach(function (queue, i) {
