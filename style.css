@@ -30,6 +30,10 @@ margin-top: 90px; }
 	margin-top:5px;
 }
 
+.servers {
+	width: 940px;
+}
+
 .servers button, .queues button{
 	margin: 0 3px 0 3px;
 }
