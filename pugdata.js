@@ -37,9 +37,18 @@ state.matchcount = matchcount;
 
 main();
 
+//filter and return current data
 function getData() {
-	// console.log("getData",state.data[state.selectedS[0]]);
-	return state.currentData;
+	return state.currentData.filter(function(match){
+	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
+			return false;
+		}
+		
+		if (! state.selectedQ.includes(match.queue.id.toString())){
+			return false;
+		}
+		return true;
+	});
 }
 
 function checkIfMultiplePlayers(){
@@ -53,7 +62,9 @@ function checkIfMultiplePlayers(){
 }
 
 function main() {
+
 	init(state);
+
 	console.log(state.data);
 	state.compFn = compMatches;
 	getUrlTeams();
@@ -64,14 +75,14 @@ function main() {
 
 }
 
+state.chart1 = createChart("chart1");
+state.chart2 = createChart("chart2");
+
 function init(state) {
 	state.playerArr = [];
 	state.players = {};
-
 	setCurrentData()
 	
-	// state.selectedQ.push(Object.keys(state.queues)[0]);
-
 	Object.keys(state.players).forEach(function(key) {
 		state.playerArr.push({ 	id: 		key, 
 							 	name: 		state.players[key], 
@@ -97,8 +108,7 @@ function init(state) {
 					p1win: 0, p2win: 0,
 					p1cwin: 0, p2cwin: 0,
 				};
-	state.chart1 = createChart("chart1");
-	state.chart2 = createChart("chart2");
+	
 }
 
 // re-render everything
@@ -170,9 +180,9 @@ function render() {
 
 function updateNavbarBtns() {
 	$('button', '.btn-container').removeClass("btn-primary").addClass("btn-secondary")
-	state.selectedS.forEach(function(e){
-		$('#' + e).addClass("btn-primary").removeClass("btn-secondary");
-	})
+	// state.selectedS.forEach(function(e){
+	// 	$('#' + e).addClass("btn-primary").removeClass("btn-secondary");
+	// })
 	state.selectedQ.forEach(function(e){
 		$('#' + e).addClass("btn-primary").removeClass("btn-secondary");
 	})
@@ -189,12 +199,6 @@ function updateNavbarBtns() {
 function getMultipleTogetherData(usrIds, oppIds) {
 	var bothIds = usrIds.concat(oppIds);
 	const matches = getData().filter(function(match) {
-		if (match.timestamp < state.datemin || match.timestamp > state.datemax) 
-		{ return false;}
-		//TODO:
-		// if (! state.selectedQ.includes(match.queue.id)){
-		// 	return false;
-		// }
 		return bothIds.every(function(usrId){
 			return match.players.find(function(player){
 				if(player.user.id === parseInt(usrId)) {
@@ -247,15 +251,6 @@ function getPlayerData(playerid) {
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
 	const res = getData().filter(function(match) {
-		if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
-			return;
-		}
-
-		//TODO
-		// console.log(match.queue.id);
-		// if (! state.selectedQ.includes(match.queue.id)){
-		// 	return;
-		// }
 		const found = match.players.find(function(player){
 			if(player.user.id === parseInt(playerid)) {
 				// dont include captain
@@ -340,17 +335,6 @@ function getCompareStats(id1,id2) {
 	}
 	// Loop through every match/player and gather data
 	getData().forEach(function(match){
-		// Only looking at stats for PUG queue
-	 // 	if (!MAIN_QUEUES.includes(match.queue.id)) {
-	 // 		return;
-	 // 	}
-	 	if (match.timestamp < state.datemin || match.timestamp > state.datemax) {
-			return;
-		}
-		
-		if (! state.selectedQ.includes(match.queue.id.toString())){
-			return false;
-		}
 
 		var matchPlayerArr = [];
 
@@ -586,15 +570,15 @@ function setCurrentData() {
 	})
 }
 
-function clickToArr(clicked, arrName) {
-	if(state[arrName].indexOf(clicked) === -1) {
-		state[arrName].push(clicked)
-	} else {
-		state[arrName] = state[arrName].filter(s => s !== clicked)
-	}
-	setCurrentData()
-	// populateQueues()
-}
+// function clickToArr(clicked, arrName) {
+// 	if(state[arrName].indexOf(clicked) === -1) {
+// 		state[arrName].push(clicked)
+// 	} else {
+// 		state[arrName] = state[arrName].filter(s => s !== clicked)
+// 	}
+// 	setCurrentData()
+// 	// populateQueues()
+// }
 
 function populateServerButtons() {
 	servers.forEach( function(server, i){
