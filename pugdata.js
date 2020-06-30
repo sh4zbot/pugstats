@@ -33,6 +33,12 @@ Object.entries(state.data).forEach(([server, matches]) => {
 		if (match.queue.id == 1579575609931 || match.queue.id == 1563330022431) {
 			match.queue.id = "LTunrated";
 		}
+		// LTgold matches prior to 1/24/2019 are actually LTpug
+		if (match.queue.id == 0) { 					// LTgold
+			if (match.timestamp < 1548266401000) { 	// < 1/24/2019
+				match.queue.id = 1548351881593;    	// 1548351881593 = LTpug queue
+			}
+		}
 		matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
 		state.queues[server][match.queue.id] = match.queue.name;
 	})
