@@ -30,8 +30,12 @@ margin-top: 90px; }
 	margin-top:5px;
 }
 
+.btn-container {
+	width: 90%;
+}
+
 .servers {
-	width: 940px;
+	width: 100%;
 }
 
 .servers button, .queues button{
