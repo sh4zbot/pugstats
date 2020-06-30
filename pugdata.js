@@ -1,4 +1,4 @@
-const servers = ["mace", "dae", "ta", "bittah"];
+const servers = ["mace", "dae", "ta", "bittah", "t1"];
 
 var state = {data: {}}; 
 servers.forEach(server => 
@@ -27,8 +27,8 @@ Object.entries(state.data).forEach(([server, matches]) => {
 	state.queues[server] = [];
 	
 	matches.forEach(function (match){
-		matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
-		state.queues[server][match.queue.id] = match.queue.name;
+	matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
+	state.queues[server][match.queue.id] = match.queue.name;
 	})
 	
 })
@@ -564,6 +564,10 @@ function setCurrentData() {
 		match.players.forEach(function(player){
 			state.players[player.user.id] = player.user.name;
 		})
+
+		//ppl whos name is something that is something absolutley stupid
+		const retards = { 223861431559258112: "Fisherman" };
+		state.players
 
 		
 		
