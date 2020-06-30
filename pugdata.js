@@ -1,4 +1,4 @@
-const servers = ["mace", "dae", "ta", "bittah", "t1"];
+const servers = ["mace", "dae", "bittah", "t1", "ta", ];
 
 var state = {data: {}}; 
 servers.forEach(server => 
@@ -17,25 +17,42 @@ state.teams = [{ name: "Diamond Sword",
 							 { name: "Blood Eagle",
 								 players: []}
 							];
-state.selectedS = [ "mace" ];
-state.selectedQ = ["1585645131434", "1585645136862", "1585645126218"];
+var serverQueues = {"mace": ["1585645131434", "1585645136862", "1585645126218"],
+					"t1"  : ["0", "1538528485653", "1548351881593", "1547105542554", "LTunrated", "1577778892996"]
+				   	}
+
+
 state.queues = {};
 
 // get all queue names, id's and matches played in that queue
 matchcount = {};
 Object.entries(state.data).forEach(([server, matches]) => {
 	state.queues[server] = [];
-	
 	matches.forEach(function (match){
-	matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
-	state.queues[server][match.queue.id] = match.queue.name;
+		// LTunrated t1 queue is split in two
+		if (match.queue.id == 1579575609931 || match.queue.id == 1563330022431) {
+			match.queue.id = "LTunrated";
+		}
+		matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
+		state.queues[server][match.queue.id] = match.queue.name;
 	})
-	
 })
 state.matchcount = matchcount;
-	console.log("matchcount", state.matchcount);
+getSelectedSQ(); 
 
 main();
+
+//set selected server and queue`
+function getSelectedSQ() {
+	state.selectedS = [ "mace" ];
+	state.selectedQ = Object.keys( state.queues["mace"]);
+	if (getUrlServer() != null) {
+		if (servers.includes(getUrlServer() ) ) {
+			state.selectedS = getUrlServer();
+			state.selectedQ = Object.keys( state.queues[getUrlServer()]);
+		}
+	}
+}
 
 //filter and return current data
 function getData() {
@@ -565,7 +582,7 @@ function setCurrentData() {
 			state.players[player.user.id] = player.user.name;
 		})
 
-		//ppl whos name is something that is something absolutley stupid
+		//ppl whos name is incorrect
 		const retards = { 223861431559258112: "Fisherman" };
 		state.players
 
@@ -586,9 +603,7 @@ function setCurrentData() {
 
 function populateServerButtons() {
 	servers.forEach( function(server, i){
-		var btnClass = i == 0 ? "btn-primary" : "btn-secondary";
 		var btn = $('<span class="">' + server + '</span>')
-		//button("btn-success", server);
 		btn.click(function () {
 			// $('button', '#servers').removeClass("btn-primary").addClass("btn-secondary")
 			// $(this).removeClass("btn-secondary")
@@ -603,6 +618,10 @@ function populateServerButtons() {
 		
 		var queues = state.queues[server];
 		for (var key in queues) {
+			var btnClass = "btn-secondary"
+			if (state.selectedS == server && state.selectedQ.includes(key)) {
+				btnClass = "btn-primary";
+			}
 			var qBtn = null;
 			if (state.matchcount[key] > 20) {
 				qBtn = button(btnClass, queues[key], key);
@@ -633,21 +652,6 @@ function populateServerButtons() {
 // 	</div>
 // </div>
 
-
-
-function populateQueues() {
-	Object.keys(state.queues).forEach(function (queue, i) {
-		var btnClass = i == 0 ? "btn-primary" : "btn-secondary";
-		var btn = button(btnClass, queue);
-		btn.click(function () {
-			
-			// state.queue = queue;
-			clickToArr(queue, "selectedQ");
-			render();
-		})
-		$('#queues').append(btn);
-	})
-}
 
 function displayIndexTable() {
 	var ids = state.teams.map(team => getIds(team));
@@ -899,9 +903,13 @@ function removeData(chart) {
 
 
 // URL stuff
-function getUrlTeams() {
+function getUrl() {
 	var url_string = window.location.href
-	var url = new URL(url_string);
+	return new URL(url_string);
+}
+
+function getUrlTeams() {
+	var url = getUrl();
 	var teams = [url.searchParams.get("team1"), url.searchParams.get("team2")];
 	teams.forEach(function(team,i){
 		if(team) {
@@ -912,6 +920,12 @@ function getUrlTeams() {
 		}
 	})
 	console.log(teams);
+}
+
+function getUrlServer() {
+	var url = getUrl();
+	var server = url.searchParams.get("server");
+	return server;
 }
 
 function teamsToUrl(){
@@ -956,11 +970,11 @@ function copyTextToClipboard(text) {
   });
 }
 
-var copyUrlBtn = document.querySelector('.copy-url-btn')
-
-copyUrlBtn.addEventListener('click', function(event) {
-  copyTextToClipboard(teamsToUrl());
-});
+// borked	
+// var copyUrlBtn = document.querySelector('.copy-url-btn')
+// copyUrlBtn.addEventListener('click', function(event) {
+//   copyTextToClipboard(teamsToUrl());
+// });
 
 });
 
