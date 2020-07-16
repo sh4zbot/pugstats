@@ -11,15 +11,11 @@ const MA_Q = 1558789281392;
 const MAIN_QUEUES = [TA_Q, MA_Q];
 
 
-team = {players: []}
-state.teams = [{ name: "Diamond Sword",
+state.teams = [{ name: "Team 1",
 								 players: []},
-							 { name: "Blood Eagle",
+							 { name: "Team 2",
 								 players: []}
 							];
-var serverQueues = {"mace": ["1585645131434", "1585645136862", "1585645126218"],
-					"t1"  : ["0", "1538528485653", "1548351881593", "1547105542554", "LTunrated", "1577778892996"]
-				   	}
 
 
 state.queues = {};
@@ -173,10 +169,9 @@ function render() {
 			document.getElementById("team1").setAttribute("class","col");
 			document.getElementById("chart1").style.display ="block";
 		
-			var playerData = getPlayerData(state.teams[0].players[0].id)
-			console.log(playerData);
-			var chartData = matchesToTimelineData(playerData.matches, id1);
-			pickOrderTable(playerData.picks, "pickOrderTable1");
+			var player1Data = getPlayerData(state.teams[0].players[0].id)
+			var chartData = matchesToTimelineData(player1Data.matches, id1);
+			pickOrderTable(player1Data.picks, "pickOrderTable1");
 			removeData(state.chart1);
 			addData(state.chart1, chartData);	
 		}
@@ -184,15 +179,26 @@ function render() {
 		if (id2) {
 			document.getElementById("team2").setAttribute("class","col");
 			document.getElementById("chart2").style.display ="block";
-			playerData = getPlayerData(id2)
-			chartData = matchesToTimelineData(playerData.matches, id2);
-			pickOrderTable(playerData.picks, "pickOrderTable2");
+			var player2Data = getPlayerData(id2)
+			chartData = matchesToTimelineData(player2Data.matches, id2);
+			pickOrderTable(player2Data.picks, "pickOrderTable2");
 			removeData(state.chart1);
 			addData(state.chart2, chartData);
 		}
 
-		displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
-		displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");
+		//TODO: clean up tihs spaghetti
+		if (player1Data) {
+			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1", null, player1Data.avgPick);
+		} else {
+			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
+		}
+		if (player2Data) {
+			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2", null, player2Data.avgPick);	
+		}
+		else {
+			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");	
+		}
+		
 
 		if (id1 && id2) {	
 			displayComparison(state.cData)
@@ -268,16 +274,17 @@ function getMultipleTogetherData(usrIds, oppIds) {
  }
 
 function getPlayerData(playerid) {
-
 	var picks = [];
+	var pickOrder = [];
 	for(i=1;i<=13;i++){
 		picks.push({win: 0, loss: 0, tie: 0});
 	}
 	const res = getData().filter(function(match) {
 		const found = match.players.find(function(player){
 			if(player.user.id === parseInt(playerid)) {
-				// dont include captain
-				// if(player.captain != 1) {
+					if(player.captain != 1 && player.pickOrder != null	) {
+						pickOrder.push(player.pickOrder);
+					}
 					if(player.pickOrder == null) {
 						//player was subbed out - do nothing
 					}
@@ -288,15 +295,18 @@ function getPlayerData(playerid) {
 					} else if (match.winningTeam == 0) {
 						picks[player.pickOrder].tie++;
 					}	
-				// } 
 				return true;
 			}
-			// return (player.user.id === parseInt(playerid));
+		// return (player.user.id === parseInt(playerid));
 		})
 		return found;
 	})
-	return {matches: res,
-			picks:   picks};
+	console.log(pickOrder);
+	console.log(pickOrder.length);
+	return 	{ matches: res,
+			  		picks:   picks,
+			  		avgPick: pickOrder.reduce((a,b) => a + b) / pickOrder.length
+					};
 }
 
 function matchesToTimelineData(matches, userid) {
@@ -374,15 +384,16 @@ function getCompareStats(id1,id2) {
 
 			state.playerArr.find((stored,i) => {
 				if(stored.id == player.user.id) {
-						state.playerArr[i] = {  id: 				stored.id, 
-												name: 			stored.name, 
-												matches: 		stored.matches + 1, 
-												captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
-												win: (match.winningTeam == player.team) ? stored.win + 1 : stored.win,
-												loss: (match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
-												cwin: (player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
-												closs: (match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
-									}
+						state.playerArr[i] = 
+						{	id: 				stored.id, 
+  						name: 			stored.name, 
+							matches: 		stored.matches + 1, 
+							captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
+							win: 				(match.winningTeam == player.team) ? stored.win + 1 : stored.win,
+							loss: 			(match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
+							cwin: 			(player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
+							closs: 			(match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
+						}
 				return true; // return true == .find() is done			
 				}
 			})
@@ -722,7 +733,7 @@ function displayIndexTable() {
 
 
 // TODO: fix and make for multiple
-function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
+function displayPlayer(team, cWins, wins, losses, htmlId, ties, avgPick) {
 	var root = document.getElementById(htmlId);
 	root.innerHTML = "";
 	var nameDiv = document.createElement("h1")
@@ -754,6 +765,16 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
 		tiesDiv.innerHTML = "Ties: " 						+ ties;	
 		root.appendChild(tiesDiv);
 	}
+	//TODO: WORKS but doesnt work F
+	if(avgPick) {
+		console.log("WORKS")
+		
+		var avgPickDiv = document.createElement("span")
+		avgPickDiv.innerHtml = "Avg. Pick: " + avgPick;
+		root.appendChild(document.createElement ("br"));
+		root.appendChild(avgPickDiv);
+	}
+	
 }
 
 function displayComparison(cData) {
