@@ -102,31 +102,35 @@ function init(state) {
 	state.players = {};
 	setCurrentData()
 	
-	Object.keys(state.players).forEach(function(key) {
-		state.playerArr.push({ 	id: 		key, 
-							 	name: 		state.players[key], 
-								matches: 	0, 
-							 	captained: 	0,
-							 	win: 		0,
-			 				 	loss: 		0,
-			 					cwin: 		0,
-			 				 	closs: 		0,
-								});
-	});
+	
 
 
 	state.player1 = {	htmlId: "p1" };
 	state.player2 = {	htmlId: "p2" };
 
+
+	// init player data
+	Object.keys(state.players).forEach(function(key) {
+		state.playerArr.push({ 	id: 				key, 
+													 	name: 			state.players[key], 
+														matches: 		0, 
+													 	captained: 	0,
+													 	win: 				0,
+									 				 	loss: 			0,
+									 					cwin: 			0,
+									 				 	closs: 			0,
+													});
+	});
+
 	// combined data for both compared players
-	state.cData = {	matches: 				0,
-					bothWin: 				0,
-					bothLose: 			0,
-					bothCaptain: 		0,
-					ties: 					0,
-					p1win: 0, p2win: 0,
-					p1cwin: 0, p2cwin: 0,
-				};
+	state.cData = {	matches: 							0,
+									bothWin: 							0,
+									bothLose: 						0,
+									bothCaptain: 					0,
+									ties: 								0,
+									p1win: 0, p2win: 			0,
+									p1cwin: 0, p2cwin: 		0,
+								};
 	
 }
 
@@ -135,6 +139,8 @@ function render() {
 	init(state)
 	// we have multiple players selected for one team
 	//TODO Here
+
+
 	getCompareStats();
 	getCPM(); 
 	getWR( false);
@@ -301,11 +307,10 @@ function getPlayerData(playerid) {
 		})
 		return found;
 	})
-	console.log(pickOrder);
-	console.log(pickOrder.length);
+
 	return 	{ matches: res,
 			  		picks:   picks,
-			  		avgPick: pickOrder.reduce((a,b) => a + b) / pickOrder.length
+			  		avgPick: Math.round( pickOrder.reduce((a,b) => a + b) / pickOrder.length * 100 ) / 100 
 					};
 }
 
@@ -600,8 +605,8 @@ function setCurrentData() {
 		})
 
 		//ppl whos name is incorrect
-		const retards = { 223861431559258112: "Fisherman" };
-		state.players
+		// const retards = { 223861431559258112: "Fisherman" };
+		// state.players
 
 		
 		
@@ -678,6 +683,7 @@ function displayIndexTable() {
 	// Table head
 	var thead = document.createElement('thead'); //(playersTable.getElementsByTagName('thead')[0];
 	var tr = document.createElement('tr');
+	console.log("playerArr", state.playerArr)
 	Object.keys(state.playerArr[0]).forEach(function(key) {
 		if(key == "id") { return;}
 		var th = document.createElement('th');
@@ -765,12 +771,10 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties, avgPick) {
 		tiesDiv.innerHTML = "Ties: " 						+ ties;	
 		root.appendChild(tiesDiv);
 	}
-	//TODO: WORKS but doesnt work F
+
 	if(avgPick) {
-		console.log("WORKS")
-		
 		var avgPickDiv = document.createElement("span")
-		avgPickDiv.innerHtml = "Avg. Pick: " + avgPick;
+		avgPickDiv.innerHTML = "Avg. Pick: " + avgPick;
 		root.appendChild(document.createElement ("br"));
 		root.appendChild(avgPickDiv);
 	}
