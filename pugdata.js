@@ -35,8 +35,12 @@ Object.entries(state.data).forEach(([server, matches]) => {
 				match.queue.id = 1548351881593;    	// 1548351881593 = LTpug queue
 			}
 		}
-		matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
-		state.queues[server][match.queue.id] = match.queue.name;
+		// Casual pugs
+		if (match.queue.id != 1599325324396) {
+			matchcount[match.queue.id] = matchcount[match.queue.id] ? matchcount[match.queue.id] + 1 : 1;
+			state.queues[server][match.queue.id] = match.queue.name;
+		}
+		
 	})
 })
 state.matchcount = matchcount;
