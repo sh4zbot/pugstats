@@ -106,9 +106,6 @@ function init(state) {
 	state.players = {};
 	setCurrentData()
 	
-	
-
-
 	state.player1 = {	htmlId: "p1" };
 	state.player2 = {	htmlId: "p2" };
 
@@ -117,12 +114,14 @@ function init(state) {
 	Object.keys(state.players).forEach(function(key) {
 		state.playerArr.push({ 	id: 				key, 
 													 	name: 			state.players[key], 
+													 	avgpick: [],
 														matches: 		0, 
 													 	captained: 	0,
 													 	win: 				0,
 									 				 	loss: 			0,
 									 					cwin: 			0,
 									 				 	closs: 			0,
+									 				 	
 													});
 	});
 
@@ -198,12 +197,12 @@ function render() {
 
 		//TODO: clean up tihs spaghetti
 		if (player1Data) {
-			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1", null, player1Data.avgPick);
+			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1", null);
 		} else {
 			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
 		}
 		if (player2Data) {
-			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2", null, player2Data.avgPick);	
+			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2", null);	
 		}
 		else {
 			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");	
@@ -292,9 +291,6 @@ function getPlayerData(playerid) {
 	const res = getData().filter(function(match) {
 		const found = match.players.find(function(player){
 			if(player.user.id === parseInt(playerid)) {
-					if(player.captain != 1 && player.pickOrder != null	) {
-						pickOrder.push(player.pickOrder);
-					}
 					if(player.pickOrder == null) {
 						//player was subbed out - do nothing
 					}
@@ -314,7 +310,6 @@ function getPlayerData(playerid) {
 
 	return 	{ matches: res,
 			  		picks:   picks,
-			  		avgPick: Math.round( pickOrder.reduce((a,b) => a + b) / pickOrder.length * 100 ) / 100 
 					};
 }
 
@@ -392,22 +387,33 @@ function getCompareStats(id1,id2) {
 			
 
 			state.playerArr.find((stored,i) => {
+				// console.log(stored);
 				if(stored.id == player.user.id) {
+					var avgpick = stored.avgpick;
+					if( player.captain != 1 && player.pickOrder != null) 
+					{	avgpick.push(player.pickOrder)
+					}
 						state.playerArr[i] = 
 						{	id: 				stored.id, 
-  						name: 			stored.name, 
+  							name: 			stored.name, 
+  							avgpick: 		avgpick,
 							matches: 		stored.matches + 1, 
 							captained:  (player.captain == 1) ? stored.captained + 1 : stored.captained,
 							win: 				(match.winningTeam == player.team) ? stored.win + 1 : stored.win,
 							loss: 			(match.winningTeam == player.team || match.winningTeam == 0) ? stored.loss : stored.loss + 1,
 							cwin: 			(player.captain && match.winningTeam==player.team) ? stored.cwin + 1 : stored.cwin,
-							closs: 			(match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs
+							closs: 			(match.winningTeam != 0 && player.captain &&  match.winningTeam != player.team) ? stored.closs + 1 : stored.closs,
+							
 						}
+						
+						
+
 				return true; // return true == .find() is done			
 				}
 			})
 		});
 		
+
 		if(id1 && id2) {
 			var found1 = false, found2 = false;
 			matchPlayerArr.forEach((player) => {
@@ -452,6 +458,12 @@ function getCompareStats(id1,id2) {
 					state.cData.ties = state.cData.ties +1;
 				}
 			}
+		}
+	})
+
+	state.playerArr.forEach(function(player){
+		if (player.avgpick.length>0) {
+			player.avgpick = Math.round( player.avgpick.reduce((a,b) => a + b) / player.avgpick.length * 100 ) / 100
 		}
 	})
 }
@@ -514,6 +526,13 @@ function onTheadClick(key) {
   	state.compFn = compMatches;
     displayIndexTable();
     break;
+
+  case "avgpick":
+  	state.compFn = compPick;
+    displayIndexTable();
+    break;
+
+
   case "captained":
   	state.compFn = compCaptained;
     displayIndexTable();
@@ -713,11 +732,14 @@ function displayIndexTable() {
 			if(key == "id") {
 				return;
 			}
-			if(key == "name") {
-				td.appendChild( document.createTextNode(player[key]))
-			}
+			// if(	key == "avgpick") {
+			// 	if( player[key].length > 0) {
+			// 		td.appendChild( document.createTextNode( Math.round( player[key].reduce((a,b) => a + b) / player[key].length * 100 ) / 100  ))
+			// 	}
+				
+			// }
 			else {
-				td.appendChild(document.createTextNode( player[key]));
+				td.appendChild(	document.createTextNode(player[key]));
 			}
 			tr.appendChild(td);
 		})
@@ -743,7 +765,7 @@ function displayIndexTable() {
 
 
 // TODO: fix and make for multiple
-function displayPlayer(team, cWins, wins, losses, htmlId, ties, avgPick) {
+function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
 	var root = document.getElementById(htmlId);
 	root.innerHTML = "";
 	var nameDiv = document.createElement("h1")
@@ -775,14 +797,6 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties, avgPick) {
 		tiesDiv.innerHTML = "Ties: " 						+ ties;	
 		root.appendChild(tiesDiv);
 	}
-
-	if(avgPick) {
-		var avgPickDiv = document.createElement("span")
-		avgPickDiv.innerHTML = "Avg. Pick: " + avgPick;
-		root.appendChild(document.createElement ("br"));
-		root.appendChild(avgPickDiv);
-	}
-	
 }
 
 function displayComparison(cData) {
@@ -912,6 +926,10 @@ function compCWR(a,b) {
 
 function compWR(a,b) {
 	return parseFloat( b.wr ) - parseFloat( a.wr );
+}
+
+function compPick(a,b) {
+	return parseFloat( a.avgpick ) - parseFloat( b.avgpick );
 }
 
 function compcwin(a,b) {

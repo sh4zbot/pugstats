@@ -17,6 +17,15 @@ margin-top: 90px; }
 
 #playersTable thead {cursor: pointer;}
 #playersTable tbody tr {cursor: pointer;}
+#playersTable td:nth-child(5) {background-color: #79ef64;}
+#playersTable th:nth-child(5) {background-color: #79ef64;}
+#playersTable td:nth-child(6) {background-color: #ef7777;}
+#playersTable th:nth-child(6) {background-color: #ef7777;}
+#playersTable td:nth-child(7) {background-color: #4cb33a;}
+#playersTable th:nth-child(7) {background-color: #4cb33a;}
+#playersTable td:nth-child(8) {background-color: #f33f3f;}
+#playersTable th:nth-child(8) {background-color: #f33f3f;}
+
 
 .pickOrderTable tr {
 	border-bottom: 1px solid;
