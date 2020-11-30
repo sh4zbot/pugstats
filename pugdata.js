@@ -87,6 +87,11 @@ function checkIfMultiplePlayers(){
 function main() {
 
 	init(state);
+	getData().forEach(function(match){
+		if (match.winningTeam == 0) {
+
+		}
+	})
 
 	console.log(state.data);
 	state.compFn = compMatches;
@@ -102,10 +107,16 @@ state.chart1 = createChart("chart1");
 state.chart2 = createChart("chart2");
 
 function init(state) {
+	state.matchStats = [];
+	state.matchStats.tie = 0;
+	state.matchStats.red = 0;
+	state.matchStats.blue = 0;
+
 	state.playerArr = [];
 	state.players = {};
 	setCurrentData()
-	
+	console.log("matchstats", state.matchStats);
+
 	state.player1 = {	htmlId: "p1" };
 	state.player2 = {	htmlId: "p2" };
 
@@ -140,6 +151,15 @@ function init(state) {
 // re-render everything
 function render() {
 	init(state)
+
+	var tot = state.matchStats.red + state.matchStats.blue + state.matchStats.tie;
+	var red = state.matchStats.red / tot;
+	var blue = state.matchStats.blue / tot;
+	var tie = state.matchStats.tie / tot;
+
+	document.getElementById("red") .innerHTML 		= "red " 	+ (red 	* 100).toFixed(0) + '%';
+	document.getElementById("blue").innerHTML 		= "blue " + (blue * 100).toFixed(0) + '%';
+	document.getElementById("tie") .innerHTML 		= "tie " 	+ (tie 	* 100).toFixed(0) + '%';
 	// we have multiple players selected for one team
 	//TODO Here
 
@@ -211,6 +231,8 @@ function render() {
 
 		if (id1 && id2) {	
 			displayComparison(state.cData)
+		} else {
+			displayComparison(null)
 		}
 	}
 	displayIndexTable();
@@ -627,6 +649,15 @@ function setCurrentData() {
 			state.players[player.user.id] = player.user.name;
 		})
 
+		if( match.winningTeam == 0 ) {
+			state.matchStats.tie = state.matchStats.tie + 1;
+		}
+		else if( match.winningTeam == 1) {
+			state.matchStats.red = state.matchStats.red + 1;	
+		}
+		else if( match.winningTeam == 2) {
+			state.matchStats.blue = state.matchStats.blue + 1;	
+		}
 		//ppl whos name is incorrect
 		// const retards = { 223861431559258112: "Fisherman" };
 		// state.players
