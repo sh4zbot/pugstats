@@ -4,6 +4,8 @@ var state = {data: {}};
 servers.forEach(server => 
 	state.data[server] = window["data" + server]
 	)
+console.log("shazbucks", window["datashazbucks"] );
+state.shazbucks = window["datashazbucks"];
 document.addEventListener('DOMContentLoaded', (event) => {
 
 const TA_Q = 1548704432021;
@@ -132,6 +134,7 @@ function init(state) {
 									 				 	loss: 			0,
 									 					cwin: 			0,
 									 				 	closs: 			0,
+									 				 	shazbucks:  0,
 									 				 	
 													});
 	});
@@ -166,6 +169,28 @@ function render() {
 
 	getCompareStats(); // gets match stats per player too, necessary not only for compare stats
 	state.playerArr = filterByMatches( document.getElementById("minMatchesInput").value );
+
+
+	// TODO this is where im at
+
+	state.playerArr.forEach(function(player, i){
+
+		state.shazbucks.forEach(function(shazbuck){ 
+			if( shazbuck.discord_id == player.id) {
+				state.playerArr[i].shazbucks = shazbuck.balance;
+			}
+		})
+
+		// if( state.shazbucks.find(function( shazbuck){
+		// 	return shazbuck.discord_id == player.id;
+		// 	})) 
+		// 	{
+		// 	console.log("shazbucks person identified");
+		// 	state.playerArr[i].shazbucks = state.shazbucks[player.id].balance;
+		// }
+		
+		// console.log(player.id);
+	})
 	getCPM(); 
 	getWR( false);
 	getWR( true);
@@ -589,6 +614,10 @@ function onTheadClick(key) {
 		state.compFn = compcloss;
   	displayIndexTable();
   	break;
+  case "shazbucks":
+  	state.compFn = compShazbucks;
+  	displayIndexTable();
+  	break;
   default:
 	}
 }
@@ -980,6 +1009,9 @@ function compcloss(a,b) {
 	return b.closs- a.closs;
 }
 
+function compShazbucks(a,b) {
+	return b.shazbucks - a.shazbucks;
+}
 
 function addData(chart, data) {
     chart.data = data;

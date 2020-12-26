@@ -18,3 +18,7 @@ foreach( $servers as $name=>$id) {
 	$data = "data" . $name . " = " . $json . ";";
 	file_put_contents($name . ".json", $data);
 }
+
+//shazbucks
+$shazbucks = file_get_contents("https://club77.org/shazbuckbot/users.py");
+file_put_contents("shazbucks.json", "datashazbucks = " . $shazbucks . ";");
