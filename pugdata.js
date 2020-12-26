@@ -164,11 +164,13 @@ function render() {
 	//TODO Here
 
 
-	getCompareStats();
+	getCompareStats(); // gets match stats per player too, necessary not only for compare stats
+	state.playerArr = filterByMatches( document.getElementById("minMatchesInput").value );
 	getCPM(); 
 	getWR( false);
 	getWR( true);
 	updateNavbarBtns();
+
 	if(checkIfMultiplePlayers()){
 		// document.getElementById("midh1").innerHTML ="VS";
 		// document.getElementById("middiv").style.display ="none";
@@ -918,6 +920,13 @@ function cpm(player)
 
 // function CWR(player){}
 
+// Filter functions
+function filterByMatches( minMatches) {
+	return state.playerArr.filter(function( player){ 
+		return ( player.matches >= minMatches);
+	})
+}
+
 // Compare functions for sorting
 function compName( a, b ) {
   if ( a.name < b.name ){
@@ -1053,6 +1062,10 @@ function copyTextToClipboard(text) {
     console.error('Async: Could not copy text: ', err);
   });
 }
+
+$('#minMatchesInput').on('change', function(){
+	render();
+})
 
 // borked	
 // var copyUrlBtn = document.querySelector('.copy-url-btn')
