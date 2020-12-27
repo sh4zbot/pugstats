@@ -171,26 +171,20 @@ function render() {
 	state.playerArr = filterByMatches( document.getElementById("minMatchesInput").value );
 
 
-	// TODO this is where im at
-
+	// shazbucks
 	state.playerArr.forEach(function(player, i){
-
-		state.shazbucks.forEach(function(shazbuck){ 
-			if( shazbuck.discord_id == player.id) {
-				state.playerArr[i].shazbucks = shazbuck.balance;
-			}
-		})
-
-		// if( state.shazbucks.find(function( shazbuck){
-		// 	return shazbuck.discord_id == player.id;
-		// 	})) 
-		// 	{
-		// 	console.log("shazbucks person identified");
-		// 	state.playerArr[i].shazbucks = state.shazbucks[player.id].balance;
-		// }
-		
-		// console.log(player.id);
+		var found = null;
+		found = state.shazbucks.find(	function( shazbuck){
+							return shazbuck.discord_id == player.id;
+						})
+		if( found){
+			state.playerArr[i].shazbucks = found.balance;
+		}
+		else {
+			state.playerArr[i].shazbucks = 0;
+		}
 	})
+	
 	getCPM(); 
 	getWR( false);
 	getWR( true);
