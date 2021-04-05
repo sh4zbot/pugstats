@@ -7,7 +7,7 @@
 .row.main{ 
 margin-top: 0px; }
 .ctable {
-	margin-top: 50px;
+	/*margin-top: 50px;*/
 }
 
 .active { background-color: #b3feb1; }
@@ -16,7 +16,13 @@ margin-top: 0px; }
 /*#compareDiv {display: none;}*/
 
 #playersTable thead {cursor: pointer;}
-#playersTable tbody tr {cursor: pointer;}
+#playersTable tbody tr {
+	cursor: pointer;
+	line-height:6px;
+}
+#playersTable th, #playersTable td {
+	padding: 6px 6px;
+}
 #playersTable td:nth-child(5) {background-color: #79ef64;}
 #playersTable th:nth-child(5) {background-color: #79ef64;}
 #playersTable td:nth-child(6) {background-color: #ef7777;}
@@ -27,7 +33,7 @@ margin-top: 0px; }
 #playersTable th:nth-child(8) {background-color: #f33f3f;}
 
 #minMatchesInput {
-	width: 60px;
+	width: 50px;
 }
 
 .dates {
@@ -37,8 +43,12 @@ margin-top: 0px; }
 .dates input {
 	margin-left: 5px;
 	margin-right: 5px;
+	display:inline-block;
 }
 
+input{
+	float:right;
+}
 .pickOrderTable tr {
 	border-bottom: 1px solid;
 }
@@ -60,7 +70,11 @@ margin-top: 0px; }
 }
 
 .servers button, .queues button{
-	margin: 0 3px 0 3px;
+	margin: 2px 3px 0 3px;
+}
+
+input {
+	width:50px;
 }
 /*.rightleft tr td:first-child {
 	text-align:right;

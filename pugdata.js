@@ -48,6 +48,10 @@ Object.entries(state.data).forEach(([server, matches]) => {
 state.matchcount = matchcount;
 getSelectedSQ(); 
 
+
+
+
+
 main();
 
 //set selected server and queue`
@@ -105,8 +109,9 @@ function main() {
 
 }
 
-state.chart1 = createChart("chart1");
-state.chart2 = createChart("chart2");
+// state.chart1 = createChart("chart1");
+console.log("crearte chart1");
+// state.chart2 = createChart("chart2");
 
 function init(state) {
 	state.matchStats = [];
@@ -148,7 +153,6 @@ function init(state) {
 									p1win: 0, p2win: 			0,
 									p1cwin: 0, p2cwin: 		0,
 								};
-	
 }
 
 // re-render everything
@@ -193,8 +197,8 @@ function render() {
 	if(checkIfMultiplePlayers()){
 		// document.getElementById("midh1").innerHTML ="VS";
 		// document.getElementById("middiv").style.display ="none";
-		document.getElementById("chart1").style.display ="none";
-		document.getElementById("chart2").style.display ="none";
+		// document.getElementById("chart1").style.display ="none";
+		// document.getElementById("chart2").style.display ="none";
 		var usrIds = state.teams[0].players.map(p => p.id)
 		var oppIds = state.teams[1].players.map(p => p.id)
 		var stats = getMultipleTogetherData(usrIds,oppIds);
@@ -216,24 +220,23 @@ function render() {
 		id1 = state.teams[0].players[0] ? state.teams[0].players[0].id : null;
 		id2 = state.teams[1].players[0] ? state.teams[1].players[0].id : null;
 		if (id1) {
-			document.getElementById("team1").setAttribute("class","col");
-			document.getElementById("chart1").style.display ="block";
-		
+			// document.getElementById("team1").setAttribute("class","col");
+			// document.getElementById("chart1").style.display ="block";
 			var player1Data = getPlayerData(state.teams[0].players[0].id)
-			var chartData = matchesToTimelineData(player1Data.matches, id1);
+			// var chartData = matchesToTimelineData(player1Data.matches, id1);
 			pickOrderTable(player1Data.picks, "pickOrderTable1");
-			removeData(state.chart1);
-			addData(state.chart1, chartData);	
+			// removeData(state.chart1);
+			// addData(state.chart1, chartData);	
 		}
 		
 		if (id2) {
-			document.getElementById("team2").setAttribute("class","col");
-			document.getElementById("chart2").style.display ="block";
+			// document.getElementById("team2").setAttribute("class","col");
+			// document.getElementById("chart2").style.display ="block";
 			var player2Data = getPlayerData(id2)
-			chartData = matchesToTimelineData(player2Data.matches, id2);
+			// chartData = matchesToTimelineData(player2Data.matches, id2);
 			pickOrderTable(player2Data.picks, "pickOrderTable2");
-			removeData(state.chart1);
-			addData(state.chart2, chartData);
+			// removeData(state.chart1);
+			// addData(state.chart2, chartData);
 		}
 
 		//TODO: clean up tihs spaghetti
