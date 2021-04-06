@@ -12,7 +12,7 @@ $servers = 	[ "ta"   		=> 539495516581658645
 						];
 
 $url = "http://50.116.36.119/api/server/";
-ini_set('default_socket_timeout', 3);
+ini_set('default_socket_timeout', 15);
 foreach( $servers as $name=>$id) {
 	$json = @file_get_contents($url . $id . '/games');
 	if( $json === FALSE)
