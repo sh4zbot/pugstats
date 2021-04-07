@@ -243,13 +243,15 @@ function render() {
 		if (player1Data) {
 			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1", null);
 		} else {
-			displayPlayer(state.teams[0], state.cData.p1cwin, state.cData.p1win, state.cData.p2win, "team1");
+			displayPlayer(state.teams[0], null, null, null, "team1", null);
+			pickOrderTable(null, "pickOrderTable1");
 		}
 		if (player2Data) {
 			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2", null);	
 		}
 		else {
-			displayPlayer(state.teams[1], state.cData.p2cwin, state.cData.p2win, state.cData.p1win, "team2");	
+			displayPlayer(state.teams[1], null, null, null, "team2", null);
+			pickOrderTable(null, "pickOrderTable2");
 		}
 		
 
@@ -833,6 +835,7 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
 	root.appendChild(document.createElement("br"));
 
 	var cWinsDiv = document.createElement("span")
+	console.log( "cwins", cWins);
 	if(cWins == null) {
 		cWinsDiv.innerHTML = "";
 	} else {
@@ -843,11 +846,17 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
 	
 	var winsDiv = document.createElement("span")
 	winsDiv.innerHTML = "Wins: " 							+ wins;
+	if(wins == null ) {
+		winsDiv.innerHTML = "";
+	}
 	root.appendChild(winsDiv);
 	root.appendChild(document.createElement("br"));
 
 	var lossesDiv = document.createElement("span")
 	lossesDiv.innerHTML = "Losses: " 						+ losses;
+	if(losses == null ) {
+		lossesDiv.innerHTML = "";
+	}
 	root.appendChild(lossesDiv);
 	root.appendChild(document.createElement("br"));
 
@@ -856,6 +865,11 @@ function displayPlayer(team, cWins, wins, losses, htmlId, ties) {
 		tiesDiv.innerHTML = "Ties: " 						+ ties;	
 		root.appendChild(tiesDiv);
 	}
+}
+
+function displayNoPlayer()
+{
+
 }
 
 function displayComparison(cData) {

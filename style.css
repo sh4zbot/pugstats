@@ -1,4 +1,4 @@
-.tableFixHead          { overflow-y: auto; height: 80%; }
+.tableFixHead          { overflow-y: auto; }
 .tableFixHead thead th { position: sticky; top: 0; }
 #playersTable th     	 { background:#eee; }
 
