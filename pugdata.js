@@ -1,4 +1,4 @@
-const servers = ["mace", "dae", "bittah", "t1", "ta", ];
+const servers = ["mace", "dae", "bittah", "t1", "ta", "naTA"];
 
 var state = {data: {}}; 
 servers.forEach(server => 
